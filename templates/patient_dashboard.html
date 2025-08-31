@@ -170,6 +170,9 @@
                         <button class="btn btn-outline-warning" onclick="openImageGenerator()">
                             <i class="fas fa-image me-2"></i>Generate Medical Image
                         </button>
+                        <button class="btn btn-outline-secondary" onclick="showMedicalEducation()">
+                            <i class="fas fa-book-medical me-2"></i>Educational Images
+                        </button>
                     </div>
                 </div>
             </div>
@@ -412,6 +415,70 @@ function generateImage() {
         button.innerHTML = originalText;
         button.disabled = false;
     });
+}
+
+// Show medical education modal
+function showMedicalEducation() {
+    const modalHtml = `
+        <div class="modal fade" id="educationModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">IVF Educational Guide</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="text-center">
+                                    <img src="/static/images/embryo_transfer.png" class="img-fluid rounded mb-2" alt="Embryo Transfer">
+                                    <h6>Embryo Transfer Process</h6>
+                                    <p class="small text-muted">The final step where your embryo is carefully placed in your uterus using a thin catheter.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="text-center">
+                                    <img src="/static/images/egg_retrieval.png" class="img-fluid rounded mb-2" alt="Egg Retrieval">
+                                    <h6>Egg Retrieval Procedure</h6>
+                                    <p class="small text-muted">Collection of mature eggs from your ovaries using ultrasound guidance.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="text-center">
+                                    <img src="/static/images/embryo_stages.png" class="img-fluid rounded mb-2" alt="Embryo Development">
+                                    <h6>Embryo Development Stages</h6>
+                                    <p class="small text-muted">Watch how your embryo develops from day 1 through day 5 blastocyst stage.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="text-center">
+                                    <img src="/static/images/anatomy_diagram.png" class="img-fluid rounded mb-2" alt="Reproductive Anatomy">
+                                    <h6>Reproductive System Anatomy</h6>
+                                    <p class="small text-muted">Understanding the female reproductive system during fertility treatment.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById('educationModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add new modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('educationModal'));
+    modal.show();
 }
 </script>
 {% endblock %}

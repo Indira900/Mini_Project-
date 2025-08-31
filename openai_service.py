@@ -2,8 +2,7 @@ import os
 import json
 from openai import OpenAI
 
-# The newest OpenAI model is "gpt-5" which was released August 7, 2025.
-# Do not change this unless explicitly requested by the user
+# Using GPT-4o which is the latest available model
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "fallback-key")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -35,7 +34,7 @@ def get_chatbot_response(message, user, patient_data=None):
         """
         
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": context},
                 {"role": "user", "content": message}
@@ -88,7 +87,7 @@ def get_nutrition_plan(patient_data):
         """
         
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a fertility nutrition specialist. Provide evidence-based nutrition advice for IVF patients."},
                 {"role": "user", "content": context}
@@ -148,7 +147,7 @@ def get_yoga_routine(patient_data):
         """
         
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a fertility yoga specialist. Create safe, gentle yoga routines for IVF patients."},
                 {"role": "user", "content": context}

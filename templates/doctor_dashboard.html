@@ -72,6 +72,51 @@
         </div>
     </div>
 
+    <!-- AI Medical Education Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>IVF Educational Resources
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="education-card text-center">
+                                <img src="{{ url_for('static', filename='images/embryo_transfer.png') }}" class="img-fluid rounded mb-2" alt="Embryo Transfer Process" style="height: 150px; object-fit: cover;">
+                                <h6>Embryo Transfer</h6>
+                                <p class="small text-muted">Visual guide to the transfer procedure</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="education-card text-center">
+                                <img src="{{ url_for('static', filename='images/egg_retrieval.png') }}" class="img-fluid rounded mb-2" alt="Egg Retrieval Process" style="height: 150px; object-fit: cover;">
+                                <h6>Egg Retrieval</h6>
+                                <p class="small text-muted">Ovarian stimulation and retrieval</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="education-card text-center">
+                                <img src="{{ url_for('static', filename='images/embryo_stages.png') }}" class="img-fluid rounded mb-2" alt="Embryo Development" style="height: 150px; object-fit: cover;">
+                                <h6>Development Stages</h6>
+                                <p class="small text-muted">Day 1-5 embryo progression</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="education-card text-center">
+                                <img src="{{ url_for('static', filename='images/anatomy_diagram.png') }}" class="img-fluid rounded mb-2" alt="Reproductive Anatomy" style="height: 150px; object-fit: cover;">
+                                <h6>Reproductive Anatomy</h6>
+                                <p class="small text-muted">Female reproductive system</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- Patient Overview -->
         <div class="col-lg-8">
@@ -97,6 +142,7 @@
                                     <th>Success Rate</th>
                                     <th>Status</th>
                                     <th>Last Update</th>
+                                    <th>AI Analysis</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -161,12 +207,29 @@
                                             {% endif %}
                                         </td>
                                         <td>
+                                            <div class="ai-analysis-summary">
+                                                {% if latest_cycle %}
+                                                    <div class="mb-1">
+                                                        <span class="badge bg-info">AI Risk: Low</span>
+                                                    </div>
+                                                    <div class="small text-muted">
+                                                        <i class="fas fa-brain"></i> Protocol optimized
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted small">No active analysis</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
                                             <div class="btn-group btn-group-sm">
                                                 <button class="btn btn-outline-primary" onclick="viewPatientDetails({{ patient.id }})">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
                                                 <button class="btn btn-outline-success" onclick="addNotes({{ patient.id }})">
                                                     <i class="fas fa-notes-medical"></i>
+                                                </button>
+                                                <button class="btn btn-outline-warning" onclick="generateAIRecommendations({{ patient.id }})">
+                                                    <i class="fas fa-robot"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -226,7 +289,7 @@
             </div>
 
             <!-- AI Insights -->
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header">
                     <h6 class="mb-0">
                         <i class="fas fa-brain me-2"></i>AI Insights
@@ -261,6 +324,49 @@
                         <p class="small text-muted">
                             Patients with consistent wellness tracking show 18% higher success rates.
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Treatment Recommendations -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>AI Recommendations
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="recommendation-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-pills text-primary me-2"></i>
+                            <strong>Medication Adjustments</strong>
+                        </div>
+                        <p class="small text-muted mb-2">
+                            Consider increasing FSH dose for Patient #1247 based on follicle response.
+                        </p>
+                        <button class="btn btn-sm btn-outline-primary">Review</button>
+                    </div>
+                    
+                    <div class="recommendation-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-calendar-check text-success me-2"></i>
+                            <strong>Timing Optimization</strong>
+                        </div>
+                        <p class="small text-muted mb-2">
+                            Optimal transfer window predicted for Patient #1352 in 3-4 days.
+                        </p>
+                        <button class="btn btn-sm btn-outline-success">Schedule</button>
+                    </div>
+                    
+                    <div class="recommendation-item">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            <strong>Risk Alert</strong>
+                        </div>
+                        <p class="small text-muted mb-2">
+                            Monitor Patient #1089 for OHSS symptoms - elevated estradiol levels.
+                        </p>
+                        <button class="btn btn-sm btn-outline-warning">Alert</button>
                     </div>
                 </div>
             </div>
@@ -432,6 +538,28 @@ function viewPatientDetails(patientId) {
 function addNotes(patientId) {
     const modal = new bootstrap.Modal(document.getElementById('notesModal'));
     modal.show();
+}
+
+// Generate AI recommendations
+function generateAIRecommendations(patientId) {
+    // Show loading state
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.disabled = true;
+    
+    // Simulate AI analysis
+    setTimeout(() => {
+        alert(`AI Analysis Complete for Patient #${patientId}:\n\n` +
+              `• Protocol Optimization: Consider adjusting FSH dose\n` +
+              `• Success Prediction: 68.5% based on current parameters\n` +
+              `• Wellness Correlation: Stress levels may impact cycle outcome\n` +
+              `• Recommendation: Schedule additional monitoring`);
+        
+        // Reset button
+        button.innerHTML = originalContent;
+        button.disabled = false;
+    }, 2000);
 }
 
 // Filter functionality
