@@ -1,0 +1,450 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - IVF Journey Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-header bg-gradient-success text-white rounded p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2">Dr. {{ user.first_name }} {{ user.last_name }}</h1>
+                        <p class="mb-0 opacity-90">Monitor patient progress and analyze treatment outcomes</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="dashboard-date">
+                            <i class="fas fa-calendar me-2"></i>
+                            <span id="currentDate"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-primary text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ patients|length }}</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-info text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ recent_cycles|length }}</h3>
+                    <p>Active Cycles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-success text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ recent_cycles|selectattr('pregnancy_outcome', 'equalto', 'positive')|list|length }}</h3>
+                    <p>Success Cases</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-warning text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ ((recent_cycles|selectattr('pregnancy_outcome', 'equalto', 'positive')|list|length / (recent_cycles|length or 1)) * 100)|round(1) }}%</h3>
+                    <p>Success Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Patient Overview -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Patient Overview
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary active" data-filter="all">All</button>
+                        <button class="btn btn-outline-primary" data-filter="active">Active</button>
+                        <button class="btn btn-outline-primary" data-filter="successful">Successful</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Age</th>
+                                    <th>Current Cycle</th>
+                                    <th>Success Rate</th>
+                                    <th>Status</th>
+                                    <th>Last Update</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in patients %}
+                                    {% set latest_cycle = patient.cycles|selectattr('status', 'equalto', 'active')|first %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="patient-avatar bg-primary text-white rounded-circle me-2">
+                                                    {{ patient.first_name[0] }}{{ patient.last_name[0] }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ patient.first_name }} {{ patient.last_name }}</strong>
+                                                    <br><small class="text-muted">{{ patient.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if patient.patient_data %}
+                                                {{ patient.patient_data.age or 'N/A' }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if latest_cycle %}
+                                                <span class="badge bg-info">Cycle {{ latest_cycle.cycle_number }}</span>
+                                                <br><small class="text-muted">{{ latest_cycle.protocol or 'Standard' }}</small>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No Active Cycle</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if latest_cycle and latest_cycle.success_prediction %}
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar" style="width: {{ latest_cycle.success_prediction }}%"></div>
+                                                </div>
+                                                <small>{{ latest_cycle.success_prediction|round(1) }}%</small>
+                                            {% else %}
+                                                <span class="text-muted">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if latest_cycle %}
+                                                {% if latest_cycle.pregnancy_outcome == 'positive' %}
+                                                    <span class="badge bg-success">Successful</span>
+                                                {% elif latest_cycle.pregnancy_outcome == 'negative' %}
+                                                    <span class="badge bg-danger">Unsuccessful</span>
+                                                {% else %}
+                                                    <span class="badge bg-primary">In Progress</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-secondary">Not Started</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if patient.wellness_logs %}
+                                                {{ patient.wellness_logs|max(attribute='date')|attr('date')|strftime('%m/%d/%Y') }}
+                                            {% else %}
+                                                No logs
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary" onclick="viewPatientDetails({{ patient.id }})">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-outline-success" onclick="addNotes({{ patient.id }})">
+                                                    <i class="fas fa-notes-medical"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Analytics -->
+        <div class="col-lg-4">
+            <!-- Recent Cycles -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Activity
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for cycle in recent_cycles[:5] %}
+                        <div class="activity-item mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ cycle.user.first_name }} {{ cycle.user.last_name }}</strong>
+                                    <br><small class="text-muted">
+                                        Cycle {{ cycle.cycle_number }} - {{ cycle.protocol or 'Standard Protocol' }}
+                                    </small>
+                                    <br><small class="text-info">
+                                        {{ cycle.created_at.strftime('%m/%d/%Y at %I:%M %p') }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{{ 'success' if cycle.pregnancy_outcome == 'positive' else 'primary' if cycle.status == 'active' else 'secondary' }}">
+                                    {{ cycle.status.title() }}
+                                </span>
+                            </div>
+                        </div>
+                        {% if not loop.last %}
+                            <hr class="my-2">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Success Rate Analytics -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Success Analytics
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="successChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-brain me-2"></i>AI Insights
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="insight-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            <strong>Protocol Optimization</strong>
+                        </div>
+                        <p class="small text-muted">
+                            Patients with AMH levels below 1.0 show 23% better outcomes with high-dose protocols.
+                        </p>
+                    </div>
+                    
+                    <div class="insight-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-chart-line text-success me-2"></i>
+                            <strong>Age Factor Analysis</strong>
+                        </div>
+                        <p class="small text-muted">
+                            Success rates for patients under 35 have improved 15% with personalized protocols.
+                        </p>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-leaf text-info me-2"></i>
+                            <strong>Wellness Impact</strong>
+                        </div>
+                        <p class="small text-muted">
+                            Patients with consistent wellness tracking show 18% higher success rates.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patient Details Modal -->
+<div class="modal fade" id="patientDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Patient Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="patientDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notes Modal -->
+<div class="modal fade" id="notesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Patient Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="noteType" class="form-label">Note Type</label>
+                        <select class="form-select" id="noteType">
+                            <option value="consultation">Consultation</option>
+                            <option value="treatment">Treatment Plan</option>
+                            <option value="observation">Observation</option>
+                            <option value="recommendation">Recommendation</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="noteContent" class="form-label">Notes</label>
+                        <textarea class="form-control" id="noteContent" rows="5"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Save Notes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set current date
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+
+// Success Rate Chart
+const successCtx = document.getElementById('successChart').getContext('2d');
+new Chart(successCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Successful', 'Unsuccessful', 'In Progress'],
+        datasets: [{
+            data: [
+                {{ recent_cycles|selectattr('pregnancy_outcome', 'equalto', 'positive')|list|length }},
+                {{ recent_cycles|selectattr('pregnancy_outcome', 'equalto', 'negative')|list|length }},
+                {{ recent_cycles|selectattr('pregnancy_outcome', 'none')|list|length }}
+            ],
+            backgroundColor: ['#198754', '#dc3545', '#0d6efd'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// View patient details
+function viewPatientDetails(patientId) {
+    // In a real application, this would fetch patient data via API
+    document.getElementById('patientDetailsContent').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading patient details...</p>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('patientDetailsModal'));
+    modal.show();
+    
+    // Simulate API call
+    setTimeout(() => {
+        document.getElementById('patientDetailsContent').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Medical Information</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Age:</strong> 32</li>
+                        <li><strong>BMI:</strong> 24.5</li>
+                        <li><strong>AMH Level:</strong> 2.1 ng/mL</li>
+                        <li><strong>FSH Level:</strong> 7.2 mIU/mL</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Treatment History</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Previous Cycles:</strong> 1</li>
+                        <li><strong>Current Protocol:</strong> Long Protocol</li>
+                        <li><strong>Success Prediction:</strong> 65.2%</li>
+                        <li><strong>Embryo Quality Score:</strong> B+ (Good)</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12">
+                    <h6>Wellness Trends</h6>
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="wellness-metric">
+                                <div class="metric-value text-primary">4.2/5</div>
+                                <div class="metric-label">Avg Mood</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="wellness-metric">
+                                <div class="metric-value text-warning">2.8/5</div>
+                                <div class="metric-label">Avg Stress</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="wellness-metric">
+                                <div class="metric-value text-success">7.5h</div>
+                                <div class="metric-label">Avg Sleep</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="wellness-metric">
+                                <div class="metric-value text-info">4.1/5</div>
+                                <div class="metric-label">Energy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }, 1000);
+}
+
+// Add notes
+function addNotes(patientId) {
+    const modal = new bootstrap.Modal(document.getElementById('notesModal'));
+    modal.show();
+}
+
+// Filter functionality
+document.querySelectorAll('[data-filter]').forEach(button => {
+    button.addEventListener('click', function() {
+        // Update active button
+        document.querySelectorAll('[data-filter]').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Filter logic would go here
+        const filter = this.dataset.filter;
+        console.log('Filtering by:', filter);
+    });
+});
+</script>
+{% endblock %}

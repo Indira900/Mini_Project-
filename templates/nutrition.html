@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+
+{% block title %}Nutrition & Wellness - IVF Journey Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header bg-gradient-teal text-white rounded p-4">
+                <h1 class="mb-2">
+                    <i class="fas fa-apple-alt me-3"></i>Nutrition & Wellness Guidance
+                </h1>
+                <p class="mb-0 opacity-90">
+                    AI-powered personalized nutrition plans and gentle yoga routines for your IVF journey
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Nutrition Plan -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-utensils me-2"></i>Personalized Nutrition Plan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Daily Calories -->
+                    <div class="nutrition-overview mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-primary">Daily Calorie Target</h6>
+                            <span class="badge bg-primary fs-6">{{ nutrition_plan.daily_calories }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Key Nutrients -->
+                    <div class="mb-4">
+                        <h6 class="text-success mb-3">Key Nutrients for IVF Success</h6>
+                        <div class="row">
+                            {% for nutrient in nutrition_plan.key_nutrients %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="nutrient-card bg-light p-3 rounded">
+                                        <h6 class="mb-1">{{ nutrient.name }}</h6>
+                                        <small class="text-muted">{{ nutrient.benefit }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Meal Suggestions -->
+                    <div class="mb-4">
+                        <h6 class="text-info mb-3">Daily Meal Suggestions</h6>
+                        <div class="meal-plan">
+                            {% for meal, suggestion in nutrition_plan.meal_suggestions.items() %}
+                                <div class="meal-item mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-{{ 'sun' if meal == 'breakfast' else 'cloud-sun' if meal == 'lunch' else 'moon' if meal == 'dinner' else 'cookie-bite' }} text-warning me-2"></i>
+                                        <strong>{{ meal.title() }}</strong>
+                                    </div>
+                                    <p class="mb-0 ms-4">{{ suggestion }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Foods to Avoid -->
+                    <div class="mb-4">
+                        <h6 class="text-danger mb-3">Foods to Limit or Avoid</h6>
+                        <div class="avoid-foods">
+                            {% for food in nutrition_plan.foods_to_avoid %}
+                                <span class="badge bg-warning text-dark me-2 mb-2">
+                                    <i class="fas fa-times-circle me-1"></i>{{ food }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Supplements -->
+                    <div class="mb-4">
+                        <h6 class="text-purple mb-3">Recommended Supplements</h6>
+                        <div class="supplements-list">
+                            {% for supplement in nutrition_plan.supplements %}
+                                <div class="supplement-item d-flex align-items-center mb-2">
+                                    <i class="fas fa-pills text-purple me-2"></i>
+                                    <span>{{ supplement }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Hydration -->
+                    <div class="hydration-section bg-light p-3 rounded">
+                        <h6 class="text-info mb-2">
+                            <i class="fas fa-tint me-2"></i>Hydration Goals
+                        </h6>
+                        <p class="mb-0">{{ nutrition_plan.hydration }}</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success w-100" onclick="generateMealPlan()">
+                        <i class="fas fa-magic me-2"></i>Generate New Meal Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yoga & Meditation -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-purple text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-spa me-2"></i>{{ yoga_routine.routine_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Routine Overview -->
+                    <div class="routine-overview mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Duration:</span>
+                            <span class="badge bg-purple">{{ yoga_routine.duration }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Yoga Poses -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">Gentle Yoga Poses</h6>
+                        <div class="poses-list">
+                            {% for pose in yoga_routine.poses %}
+                                <div class="pose-item mb-3 border-start border-primary border-3 ps-3">
+                                    <h6 class="mb-1">{{ pose.name }}</h6>
+                                    <p class="mb-1 small">{{ pose.description }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-heart me-1"></i>{{ pose.benefit }}
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Breathing Exercises -->
+                    <div class="mb-4">
+                        <h6 class="text-info mb-3">Breathing Exercises</h6>
+                        <div class="breathing-exercises">
+                            {% for exercise in yoga_routine.breathing_exercises %}
+                                <div class="breathing-item mb-2 p-2 bg-light rounded">
+                                    <i class="fas fa-wind text-info me-2"></i>
+                                    <span>{{ exercise }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Meditation -->
+                    <div class="mb-4">
+                        <h6 class="text-success mb-3">Meditation Practice</h6>
+                        <div class="meditation-section bg-light p-3 rounded">
+                            <p class="mb-0">{{ yoga_routine.meditation }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Safety Precautions -->
+                    <div class="precautions-section">
+                        <h6 class="text-warning mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Important Safety Notes
+                        </h6>
+                        <ul class="list-unstyled">
+                            {% for precaution in yoga_routine.precautions %}
+                                <li class="mb-2">
+                                    <i class="fas fa-shield-alt text-warning me-2"></i>
+                                    <span>{{ precaution }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-purple" onclick="startYogaSession()">
+                            <i class="fas fa-play me-2"></i>Start Yoga Session
+                        </button>
+                        <button class="btn btn-outline-purple" onclick="generateYogaRoutine()">
+                            <i class="fas fa-sync me-2"></i>Generate New Routine
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Resources -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book-open me-2"></i>Additional Wellness Resources
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="resource-card text-center p-3 border rounded">
+                                <i class="fas fa-heartbeat text-danger fa-2x mb-2"></i>
+                                <h6>Fertility Foods Guide</h6>
+                                <p class="small text-muted">Comprehensive guide to fertility-boosting foods and nutrients</p>
+                                <button class="btn btn-sm btn-outline-primary">Learn More</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="resource-card text-center p-3 border rounded">
+                                <i class="fas fa-dumbbell text-success fa-2x mb-2"></i>
+                                <h6>Gentle Exercise Program</h6>
+                                <p class="small text-muted">Safe exercises during IVF treatment cycles</p>
+                                <button class="btn btn-sm btn-outline-success">View Program</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="resource-card text-center p-3 border rounded">
+                                <i class="fas fa-brain text-info fa-2x mb-2"></i>
+                                <h6>Stress Management</h6>
+                                <p class="small text-muted">Mindfulness and stress reduction techniques</p>
+                                <button class="btn btn-sm btn-outline-info">Explore</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meal Tracker -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>Today's Meal Tracker
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="mealTrackerForm">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <h6>Breakfast</h6>
+                                <textarea class="form-control" placeholder="What did you eat?" rows="3"></textarea>
+                                <small class="text-muted">Estimated calories: <span class="fw-bold">400-500</span></small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h6>Lunch</h6>
+                                <textarea class="form-control" placeholder="What did you eat?" rows="3"></textarea>
+                                <small class="text-muted">Estimated calories: <span class="fw-bold">500-600</span></small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h6>Dinner</h6>
+                                <textarea class="form-control" placeholder="What did you eat?" rows="3"></textarea>
+                                <small class="text-muted">Estimated calories: <span class="fw-bold">600-700</span></small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <h6>Snacks</h6>
+                                <textarea class="form-control" placeholder="Snacks & drinks" rows="3"></textarea>
+                                <small class="text-muted">Estimated calories: <span class="fw-bold">200-300</span></small>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Today's Meals
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Nutrition Summary
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="nutrition-summary">
+                        <div class="nutrient-progress mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Protein</span>
+                                <span>65g / 80g</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: 81%"></div>
+                            </div>
+                        </div>
+                        <div class="nutrient-progress mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Folic Acid</span>
+                                <span>320mcg / 400mcg</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-info" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="nutrient-progress mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Iron</span>
+                                <span>15mg / 18mg</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width: 83%"></div>
+                            </div>
+                        </div>
+                        <div class="nutrient-progress">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Water</span>
+                                <span>6 / 8 glasses</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Yoga Session Modal -->
+<div class="modal fade" id="yogaSessionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Guided Yoga Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="yogaTimer" class="yoga-timer mb-4">
+                    <div class="timer-display">
+                        <span id="timerMinutes">20</span>:<span id="timerSeconds">00</span>
+                    </div>
+                    <p class="current-pose">Child's Pose</p>
+                </div>
+                <div class="yoga-controls">
+                    <button class="btn btn-success" id="startTimer">
+                        <i class="fas fa-play me-2"></i>Start Session
+                    </button>
+                    <button class="btn btn-warning" id="pauseTimer" style="display: none;">
+                        <i class="fas fa-pause me-2"></i>Pause
+                    </button>
+                    <button class="btn btn-danger" id="stopTimer">
+                        <i class="fas fa-stop me-2"></i>Stop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Generate new meal plan
+function generateMealPlan() {
+    // Simulate AI meal plan generation
+    alert('Generating a new personalized meal plan based on your preferences and dietary needs...');
+    // In a real app, this would call the AI service
+}
+
+// Generate new yoga routine
+function generateYogaRoutine() {
+    alert('Creating a new yoga routine tailored to your current treatment phase...');
+    // In a real app, this would call the AI service
+}
+
+// Start yoga session
+function startYogaSession() {
+    const modal = new bootstrap.Modal(document.getElementById('yogaSessionModal'));
+    modal.show();
+}
+
+// Yoga timer functionality
+let yogaTimer = null;
+let timeLeft = 20 * 60; // 20 minutes in seconds
+
+document.getElementById('startTimer').addEventListener('click', function() {
+    if (yogaTimer) clearInterval(yogaTimer);
+    
+    yogaTimer = setInterval(function() {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+            clearInterval(yogaTimer);
+            alert('Yoga session complete! Great job!');
+        }
+    }, 1000);
+    
+    this.style.display = 'none';
+    document.getElementById('pauseTimer').style.display = 'inline-block';
+});
+
+document.getElementById('pauseTimer').addEventListener('click', function() {
+    clearInterval(yogaTimer);
+    this.style.display = 'none';
+    document.getElementById('startTimer').style.display = 'inline-block';
+});
+
+document.getElementById('stopTimer').addEventListener('click', function() {
+    clearInterval(yogaTimer);
+    timeLeft = 20 * 60;
+    updateTimerDisplay();
+    document.getElementById('startTimer').style.display = 'inline-block';
+    document.getElementById('pauseTimer').style.display = 'none';
+});
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timerMinutes').textContent = minutes.toString().padStart(2, '0');
+    document.getElementById('timerSeconds').textContent = seconds.toString().padStart(2, '0');
+}
+
+// Meal tracker form submission
+document.getElementById('mealTrackerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Meals saved successfully! Your nutrition data has been updated.');
+});
+</script>
+
+<style>
+.bg-gradient-teal {
+    background: linear-gradient(135deg, #20c997 0%, #198754 100%);
+}
+
+.bg-purple {
+    background-color: #6f42c1;
+}
+
+.btn-purple {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+.btn-purple:hover {
+    background-color: #5a359a;
+    border-color: #5a359a;
+    color: white;
+}
+
+.btn-outline-purple {
+    border-color: #6f42c1;
+    color: #6f42c1;
+}
+
+.btn-outline-purple:hover {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+.border-purple {
+    border-color: #6f42c1 !important;
+}
+
+.nutrient-card {
+    transition: transform 0.2s;
+}
+
+.nutrient-card:hover {
+    transform: translateY(-2px);
+}
+
+.pose-item {
+    transition: background-color 0.2s;
+}
+
+.pose-item:hover {
+    background-color: #f8f9fa;
+}
+
+.resource-card {
+    transition: all 0.3s;
+}
+
+.resource-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.yoga-timer {
+    padding: 2rem;
+}
+
+.timer-display {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #6f42c1;
+    margin-bottom: 1rem;
+}
+
+.current-pose {
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.nutrition-summary .progress {
+    height: 8px;
+}
+
+.meal-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 0.5rem;
+    transition: all 0.2s;
+}
+</style>
+{% endblock %}

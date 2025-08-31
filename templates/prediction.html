@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}AI Predictions - IVF Journey Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header bg-gradient-info text-white rounded p-4">
+                <h1 class="mb-2">
+                    <i class="fas fa-brain me-3"></i>AI-Powered Predictions
+                </h1>
+                <p class="mb-0 opacity-90">
+                    Revolutionary AI insights based on your unique medical profile and latest research
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if not patient_data or not patient_data.age %}
+        <!-- Incomplete Profile Warning -->
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                    <h4>Complete Your Profile for Accurate Predictions</h4>
+                    <p>To provide personalized AI predictions, we need your medical information.</p>
+                    <a href="{{ url_for('update_profile') }}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Complete Medical Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Predictions Content -->
+        <div class="row">
+            <!-- IVF Success Prediction -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 prediction-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>IVF Success Prediction
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="prediction-gauge mb-4">
+                            <div class="gauge-container">
+                                <div class="gauge-fill" style="--percentage: {{ success_prediction.success_rate }}%"></div>
+                                <div class="gauge-center">
+                                    <span class="gauge-value">{{ success_prediction.success_rate }}%</span>
+                                    <small class="gauge-label">Success Rate</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="confidence-indicator mb-3">
+                            <small class="text-muted">Confidence Level: {{ success_prediction.confidence }}%</small>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: {{ success_prediction.confidence }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="interpretation">
+                            <p class="fw-bold text-primary">{{ success_prediction.interpretation }}</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <h6>Contributing Factors:</h6>
+                        <div class="factors-list">
+                            {% for factor in success_prediction.factors %}
+                                <div class="factor-item d-flex justify-content-between align-items-center mb-2">
+                                    <span class="factor-name">{{ factor.factor }}</span>
+                                    <span class="badge bg-{{ 'success' if factor.positive else 'warning' }}">
+                                        {{ factor.impact }}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Embryo Quality Predictor -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 prediction-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-microscope me-2"></i>AI Embryo Quality Predictor
+                            <span class="badge bg-warning text-dark ms-2">NEW!</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center mb-4">
+                            <div class="col-6">
+                                <div class="quality-score">
+                                    <div class="score-circle bg-success text-white">
+                                        {{ embryo_quality_score.quality_score }}
+                                    </div>
+                                    <h6 class="mt-2">Quality Score</h6>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="quality-grade">
+                                    <div class="grade-display">
+                                        <span class="grade-letter">{{ embryo_quality_score.grade.split()[0] }}</span>
+                                    </div>
+                                    <h6 class="mt-2">Grade</h6>
+                                    <small class="text-muted">{{ embryo_quality_score.grade.split('(')[1].rstrip(')') if '(' in embryo_quality_score.grade else '' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="prediction-metrics">
+                            <div class="metric-item mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Development Probability</span>
+                                    <span class="fw-bold">{{ embryo_quality_score.development_probability }}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" style="width: {{ embryo_quality_score.development_probability }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-item">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Implantation Potential</span>
+                                    <span class="fw-bold">{{ embryo_quality_score.implantation_potential }}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: {{ embryo_quality_score.implantation_potential }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Based on age, hormone levels, and lifestyle factors
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personalized Protocol Advisor -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card prediction-card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-pills me-2"></i>Personalized Treatment Protocol Advisor
+                            <span class="badge bg-danger ms-2">NEW!</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-4 mb-3">
+                                <div class="protocol-overview">
+                                    <h6 class="text-primary">Recommended Protocol</h6>
+                                    <div class="protocol-name bg-light p-3 rounded">
+                                        <h5 class="mb-1">{{ protocol_recommendations.protocol_name }}</h5>
+                                        <p class="text-muted mb-0">Expected Response: {{ protocol_recommendations.expected_response }}</p>
+                                    </div>
+                                    <div class="personalization-score mt-3">
+                                        <small class="text-muted">Personalization Score</small>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" style="width: {{ protocol_recommendations.personalization_score }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ protocol_recommendations.personalization_score|round(0) }}% personalized</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4 mb-3">
+                                <h6 class="text-success">Medication Suggestions</h6>
+                                <ul class="list-unstyled medication-list">
+                                    {% for medication in protocol_recommendations.medication_suggestions %}
+                                        <li class="mb-2">
+                                            <i class="fas fa-prescription-bottle text-success me-2"></i>
+                                            {{ medication }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            
+                            <div class="col-lg-4 mb-3">
+                                <h6 class="text-info">Timing Recommendations</h6>
+                                <div class="timing-details">
+                                    {% for key, value in protocol_recommendations.timing_recommendations.items() %}
+                                        <div class="timing-item mb-2">
+                                            <small class="text-muted">{{ key.replace('_', ' ').title() }}:</small>
+                                            <br><span class="fw-bold">{{ value }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>AI Recommendations for Success Optimization
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Medical Recommendations</h6>
+                                <ul class="list-unstyled">
+                                    {% for recommendation in success_prediction.recommendations %}
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            {{ recommendation }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">Success Optimization Tips</h6>
+                                <ul class="list-unstyled">
+                                    {% for tip in protocol_recommendations.success_optimization %}
+                                        <li class="mb-2">
+                                            <i class="fas fa-star text-warning me-2"></i>
+                                            {{ tip }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Important:</strong> These AI predictions are based on statistical models and current research. 
+                    Always consult with your healthcare provider before making any treatment decisions. 
+                    Individual results may vary.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.prediction-gauge {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+.gauge-container {
+    position: relative;
+    width: 200px;
+    height: 100px;
+    overflow: hidden;
+}
+
+.gauge-fill {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 20px solid #e9ecef;
+    border-top-color: #28a745;
+    border-right-color: #28a745;
+    transform: rotate(calc(180deg * var(--percentage) / 100));
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.gauge-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.gauge-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.gauge-label {
+    display: block;
+    color: #6c757d;
+}
+
+.quality-score .score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 auto;
+}
+
+.quality-grade .grade-display {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #28a745;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.grade-letter {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.prediction-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.prediction-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

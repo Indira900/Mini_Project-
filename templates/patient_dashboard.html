@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - IVF Journey Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-header bg-gradient-primary text-white rounded p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2">Welcome, {{ user.first_name }}!</h1>
+                        <p class="mb-0 opacity-90">Your personalized IVF journey dashboard with AI-powered insights</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="dashboard-date">
+                            <i class="fas fa-calendar me-2"></i>
+                            <span id="currentDate"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-primary text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ latest_cycle.cycle_number if latest_cycle else 1 }}</h3>
+                    <p>Current Cycle</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-success text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ latest_cycle.success_prediction|round(1) if latest_cycle and latest_cycle.success_prediction else 'N/A' }}%</h3>
+                    <p>Success Prediction</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-info text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ active_medications|length }}</h3>
+                    <p>Active Medications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card bg-warning text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ recent_wellness|length }}</h3>
+                    <p>Wellness Logs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Current Cycle Progress -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>Current IVF Cycle Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if latest_cycle %}
+                        <div class="cycle-timeline">
+                            <div class="timeline-item {{ 'active' if latest_cycle.start_date else '' }}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Cycle Start</h6>
+                                    <small>{{ latest_cycle.start_date.strftime('%B %d, %Y') if latest_cycle.start_date else 'Not scheduled' }}</small>
+                                </div>
+                            </div>
+                            <div class="timeline-item {{ 'active' if latest_cycle.stimulation_start_date else '' }}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Stimulation</h6>
+                                    <small>{{ latest_cycle.stimulation_start_date.strftime('%B %d, %Y') if latest_cycle.stimulation_start_date else 'Not started' }}</small>
+                                </div>
+                            </div>
+                            <div class="timeline-item {{ 'active' if latest_cycle.egg_retrieval_date else '' }}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Egg Retrieval</h6>
+                                    <small>{{ latest_cycle.egg_retrieval_date.strftime('%B %d, %Y') if latest_cycle.egg_retrieval_date else 'Not scheduled' }}</small>
+                                </div>
+                            </div>
+                            <div class="timeline-item {{ 'active' if latest_cycle.transfer_date else '' }}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Transfer</h6>
+                                    <small>{{ latest_cycle.transfer_date.strftime('%B %d, %Y') if latest_cycle.transfer_date else 'Not scheduled' }}</small>
+                                </div>
+                            </div>
+                            <div class="timeline-item {{ 'active' if latest_cycle.beta_test_date else '' }}">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Beta Test</h6>
+                                    <small>{{ latest_cycle.beta_test_date.strftime('%B %d, %Y') if latest_cycle.beta_test_date else 'Not scheduled' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-plus-circle text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">No Active Cycle</h5>
+                            <p class="text-muted">Start tracking your IVF journey by updating your profile.</p>
+                            <a href="{{ url_for('update_profile') }}" class="btn btn-primary">
+                                <i class="fas fa-edit me-2"></i>Update Profile
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Wellness Chart -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-area me-2"></i>Wellness Trends (Last 7 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="wellnessChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('wellness') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Log Today's Wellness
+                        </a>
+                        <a href="{{ url_for('prediction') }}" class="btn btn-outline-success">
+                            <i class="fas fa-chart-line me-2"></i>View AI Predictions
+                        </a>
+                        <a href="{{ url_for('nutrition') }}" class="btn btn-outline-info">
+                            <i class="fas fa-apple-alt me-2"></i>Nutrition Guidance
+                        </a>
+                        <button class="btn btn-outline-warning" onclick="openImageGenerator()">
+                            <i class="fas fa-image me-2"></i>Generate Medical Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Medications -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-pills me-2"></i>Active Medications
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if active_medications %}
+                        {% for medication in active_medications %}
+                            <div class="medication-item mb-3 p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ medication.medication_name }}</h6>
+                                        <small class="text-muted">{{ medication.dosage }} - {{ medication.frequency }}</small>
+                                        {% if medication.time_of_day %}
+                                            <br><small class="text-info">Take at {{ medication.time_of_day.strftime('%I:%M %p') }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fas fa-pills mb-2" style="font-size: 2rem;"></i>
+                            <p>No active medications</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Wellness -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Wellness Logs
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_wellness %}
+                        {% for log in recent_wellness[:5] %}
+                            <div class="wellness-log-item mb-3 p-2 border-start border-primary border-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ log.date.strftime('%m/%d/%Y') }}</strong>
+                                    <div class="wellness-indicators">
+                                        {% if log.mood_rating %}
+                                            <span class="badge bg-primary">Mood: {{ log.mood_rating }}/5</span>
+                                        {% endif %}
+                                        {% if log.stress_level %}
+                                            <span class="badge bg-warning">Stress: {{ log.stress_level }}/5</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if log.sleep_hours %}
+                                    <small class="text-muted">Sleep: {{ log.sleep_hours }} hours</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <div class="text-center">
+                            <a href="{{ url_for('wellness') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fas fa-leaf mb-2" style="font-size: 2rem;"></i>
+                            <p>No wellness logs yet</p>
+                            <a href="{{ url_for('wellness') }}" class="btn btn-sm btn-primary">Start Logging</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Medical Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('upload_document') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file" name="file" required>
+                        <div class="form-text">Supported formats: PDF, DOC, DOCX, JPG, PNG</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Image Generator Modal -->
+<div class="modal fade" id="imageGeneratorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">AI Medical Image Generator</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="imagePrompt" class="form-label">Describe the medical illustration you need:</label>
+                    <textarea class="form-control" id="imagePrompt" rows="3" 
+                              placeholder="e.g., embryo development stages, IVF procedure diagram, reproductive anatomy"></textarea>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-primary" onclick="generateImage()">
+                        <i class="fas fa-magic me-2"></i>Generate Image
+                    </button>
+                </div>
+                <div id="generatedImageContainer" class="mt-4" style="display: none;">
+                    <h6>Generated Image:</h6>
+                    <img id="generatedImage" class="img-fluid rounded" alt="Generated medical illustration">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set current date
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+
+// Wellness Chart
+const ctx = document.getElementById('wellnessChart').getContext('2d');
+fetch('/api/wellness_data')
+    .then(response => response.json())
+    .then(data => {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.dates,
+                datasets: [{
+                    label: 'Mood',
+                    data: data.mood,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.3
+                }, {
+                    label: 'Stress',
+                    data: data.stress,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    tension: 0.3
+                }, {
+                    label: 'Sleep Quality',
+                    data: data.sleep_quality,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5
+                    }
+                }
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error loading wellness data:', error);
+        ctx.canvas.parentElement.innerHTML = '<p class="text-muted text-center">No wellness data available</p>';
+    });
+
+// Open image generator modal
+function openImageGenerator() {
+    const modal = new bootstrap.Modal(document.getElementById('imageGeneratorModal'));
+    modal.show();
+}
+
+// Generate AI image
+function generateImage() {
+    const prompt = document.getElementById('imagePrompt').value.trim();
+    if (!prompt) {
+        alert('Please enter a description for the image.');
+        return;
+    }
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+    button.disabled = true;
+    
+    fetch('/api/generate_image', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            prompt: prompt
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.image_url) {
+            document.getElementById('generatedImage').src = data.image_url;
+            document.getElementById('generatedImageContainer').style.display = 'block';
+        } else {
+            alert('Failed to generate image. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error generating image:', error);
+        alert('Failed to generate image. Please try again.');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+</script>
+{% endblock %}

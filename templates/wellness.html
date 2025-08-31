@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+
+{% block title %}Wellness Tracking - IVF Journey Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header bg-gradient-success text-white rounded p-4">
+                <h1 class="mb-2">
+                    <i class="fas fa-leaf me-3"></i>Wellness & Mood Tracking
+                </h1>
+                <p class="mb-0 opacity-90">
+                    Track your daily wellness to optimize your IVF journey with comprehensive mood, stress, and sleep monitoring
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Wellness Form -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Today's Wellness Log
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- Mood Tracking -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Mood Rating</label>
+                            <div class="mood-selector">
+                                <div class="d-flex justify-content-between mb-2">
+                                    {% for i in range(1, 6) %}
+                                        <label class="mood-option">
+                                            <input type="radio" name="mood_rating" value="{{ i }}" required>
+                                            <span class="mood-emoji" data-rating="{{ i }}">
+                                                {% if i == 1 %}😢
+                                                {% elif i == 2 %}😔
+                                                {% elif i == 3 %}😐
+                                                {% elif i == 4 %}😊
+                                                {% else %}😄
+                                                {% endif %}
+                                            </span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                                <small class="text-muted">1 = Very Low, 5 = Excellent</small>
+                            </div>
+                            <textarea class="form-control mt-2" name="mood_notes" placeholder="How are you feeling today? (optional)" rows="2"></textarea>
+                        </div>
+
+                        <!-- Stress Level -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Stress Level</label>
+                            <div class="stress-selector">
+                                <input type="range" class="form-range" name="stress_level" min="1" max="5" value="3" id="stressRange">
+                                <div class="d-flex justify-content-between">
+                                    <small>Low</small>
+                                    <small id="stressValue">3</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+                            <textarea class="form-control mt-2" name="stress_factors" placeholder="What's causing stress today? (optional)" rows="2"></textarea>
+                        </div>
+
+                        <!-- Sleep Tracking -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Sleep</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label">Hours Slept</label>
+                                    <input type="number" class="form-control" name="sleep_hours" step="0.5" min="0" max="12" placeholder="7.5">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Sleep Quality</label>
+                                    <select class="form-select" name="sleep_quality">
+                                        <option value="">Select</option>
+                                        <option value="1">Very Poor</option>
+                                        <option value="2">Poor</option>
+                                        <option value="3">Fair</option>
+                                        <option value="4">Good</option>
+                                        <option value="5">Excellent</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <textarea class="form-control mt-2" name="sleep_notes" placeholder="Sleep notes (optional)" rows="2"></textarea>
+                        </div>
+
+                        <!-- Physical Symptoms -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Physical Symptoms</label>
+                            <div class="symptom-checkboxes mb-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="fatigue" id="fatigue">
+                                            <label class="form-check-label" for="fatigue">Fatigue</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="nausea" id="nausea">
+                                            <label class="form-check-label" for="nausea">Nausea</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="bloating" id="bloating">
+                                            <label class="form-check-label" for="bloating">Bloating</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="headache" id="headache">
+                                            <label class="form-check-label" for="headache">Headache</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="cramps" id="cramps">
+                                            <label class="form-check-label" for="cramps">Cramps</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="hot_flashes" id="hot_flashes">
+                                            <label class="form-check-label" for="hot_flashes">Hot Flashes</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <textarea class="form-control" name="symptoms" placeholder="Other symptoms or notes" rows="2"></textarea>
+                        </div>
+
+                        <!-- Energy Level -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Energy Level</label>
+                            <input type="range" class="form-range" name="energy_level" min="1" max="5" value="3" id="energyRange">
+                            <div class="d-flex justify-content-between">
+                                <small>Very Low</small>
+                                <small id="energyValue">3</small>
+                                <small>Very High</small>
+                            </div>
+                        </div>
+
+                        <!-- Activities -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Activities Today</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label">Exercise (min)</label>
+                                    <input type="number" class="form-control" name="exercise_minutes" min="0" placeholder="30">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Meditation (min)</label>
+                                    <input type="number" class="form-control" name="meditation_minutes" min="0" placeholder="10">
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="yoga_practiced" id="yoga_practiced">
+                                <label class="form-check-label" for="yoga_practiced">
+                                    I practiced yoga today
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Nutrition -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Nutrition & Hydration</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label">Water Intake (glasses)</label>
+                                    <input type="number" class="form-control" name="water_intake" min="0" max="15" placeholder="8">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Nutrition Score</label>
+                                    <select class="form-select" name="nutrition_score">
+                                        <option value="">Rate today</option>
+                                        <option value="1">Poor</option>
+                                        <option value="2">Below Average</option>
+                                        <option value="3">Average</option>
+                                        <option value="4">Good</option>
+                                        <option value="5">Excellent</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <textarea class="form-control mt-2" name="supplements_taken" placeholder="Supplements taken today" rows="2"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-save me-2"></i>Save Today's Log
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts and Analytics -->
+        <div class="col-lg-8">
+            <!-- Wellness Overview Cards -->
+            <div class="row mb-4">
+                {% if recent_logs %}
+                    {% set latest = recent_logs[0] %}
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card bg-primary text-white">
+                            <div class="stat-icon">
+                                <i class="fas fa-smile"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ latest.mood_rating or 'N/A' }}/5</h3>
+                                <p>Latest Mood</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card bg-warning text-white">
+                            <div class="stat-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ latest.stress_level or 'N/A' }}/5</h3>
+                                <p>Stress Level</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card bg-info text-white">
+                            <div class="stat-icon">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ latest.sleep_hours or 'N/A' }}h</h3>
+                                <p>Sleep Duration</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card bg-success text-white">
+                            <div class="stat-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>{{ latest.energy_level or 'N/A' }}/5</h3>
+                                <p>Energy Level</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Wellness Trends Chart -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Wellness Trends (Last 30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="wellnessTrendsChart" height="100"></canvas>
+                </div>
+            </div>
+
+            <!-- Sleep Analysis -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-bed me-2"></i>Sleep Analysis
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="sleepChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-heart me-2"></i>Mood Distribution
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="moodChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Wellness Logs -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Wellness Logs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Mood</th>
+                                        <th>Stress</th>
+                                        <th>Sleep</th>
+                                        <th>Energy</th>
+                                        <th>Activities</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in recent_logs[:10] %}
+                                        <tr>
+                                            <td>{{ log.date.strftime('%m/%d/%Y') }}</td>
+                                            <td>
+                                                {% if log.mood_rating %}
+                                                    <span class="badge bg-primary">{{ log.mood_rating }}/5</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if log.stress_level %}
+                                                    <span class="badge bg-{{ 'danger' if log.stress_level >= 4 else 'warning' if log.stress_level >= 3 else 'success' }}">
+                                                        {{ log.stress_level }}/5
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if log.sleep_hours %}
+                                                    {{ log.sleep_hours }}h
+                                                    {% if log.sleep_quality %}
+                                                        <small class="text-muted">({{ log.sleep_quality }}/5)</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if log.energy_level %}
+                                                    <span class="badge bg-info">{{ log.energy_level }}/5</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    {% if log.exercise_minutes %}
+                                                        <i class="fas fa-running text-success me-1"></i>{{ log.exercise_minutes }}min
+                                                    {% endif %}
+                                                    {% if log.yoga_practiced %}
+                                                        <i class="fas fa-spa text-info me-1"></i>Yoga
+                                                    {% endif %}
+                                                    {% if log.meditation_minutes %}
+                                                        <i class="fas fa-om text-purple me-1"></i>{{ log.meditation_minutes }}min
+                                                    {% endif %}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-leaf fa-3x mb-3"></i>
+                            <h5>No wellness logs yet</h5>
+                            <p>Start tracking your wellness today to see trends and insights.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update range input values
+document.getElementById('stressRange').addEventListener('input', function() {
+    document.getElementById('stressValue').textContent = this.value;
+});
+
+document.getElementById('energyRange').addEventListener('input', function() {
+    document.getElementById('energyValue').textContent = this.value;
+});
+
+// Collect symptom checkboxes
+document.querySelector('form').addEventListener('submit', function() {
+    const symptoms = [];
+    document.querySelectorAll('.symptom-checkboxes input:checked').forEach(checkbox => {
+        symptoms.push(checkbox.value);
+    });
+    
+    const existingSymptoms = document.querySelector('textarea[name="symptoms"]').value;
+    const allSymptoms = symptoms.length > 0 ? symptoms.join(', ') + (existingSymptoms ? '; ' + existingSymptoms : '') : existingSymptoms;
+    document.querySelector('textarea[name="symptoms"]').value = allSymptoms;
+});
+
+// Load wellness data and create charts
+fetch('/api/wellness_data')
+    .then(response => response.json())
+    .then(data => {
+        // Wellness Trends Chart
+        const trendsCtx = document.getElementById('wellnessTrendsChart').getContext('2d');
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: data.dates,
+                datasets: [{
+                    label: 'Mood',
+                    data: data.mood,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.3
+                }, {
+                    label: 'Stress',
+                    data: data.stress,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    tension: 0.3
+                }, {
+                    label: 'Energy',
+                    data: data.energy,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5
+                    }
+                }
+            }
+        });
+
+        // Sleep Chart
+        const sleepCtx = document.getElementById('sleepChart').getContext('2d');
+        new Chart(sleepCtx, {
+            type: 'bar',
+            data: {
+                labels: data.dates.slice(-7),
+                datasets: [{
+                    label: 'Sleep Hours',
+                    data: data.sleep_hours.slice(-7),
+                    backgroundColor: '#0dcaf0',
+                    borderColor: '#0dcaf0',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 12
+                    }
+                }
+            }
+        });
+
+        // Mood Distribution Chart
+        const moodCounts = [0, 0, 0, 0, 0];
+        data.mood.forEach(mood => {
+            if (mood > 0) moodCounts[mood - 1]++;
+        });
+
+        const moodCtx = document.getElementById('moodChart').getContext('2d');
+        new Chart(moodCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['😢 Very Low', '😔 Low', '😐 Neutral', '😊 Good', '😄 Excellent'],
+                datasets: [{
+                    data: moodCounts,
+                    backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#198754'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error loading wellness data:', error);
+    });
+</script>
+
+<style>
+.mood-selector {
+    text-align: center;
+}
+
+.mood-option {
+    cursor: pointer;
+    position: relative;
+}
+
+.mood-option input {
+    display: none;
+}
+
+.mood-emoji {
+    font-size: 2rem;
+    transition: transform 0.2s;
+    display: block;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.mood-option:hover .mood-emoji {
+    transform: scale(1.2);
+}
+
+.mood-option input:checked + .mood-emoji {
+    background-color: #e3f2fd;
+    border: 2px solid #2196f3;
+}
+
+.symptom-checkboxes .form-check {
+    margin-bottom: 0.25rem;
+}
+
+.stat-card {
+    border-radius: 15px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-right: 1rem;
+    opacity: 0.8;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.stat-content p {
+    margin: 0;
+    opacity: 0.9;
+}
+</style>
+{% endblock %}
