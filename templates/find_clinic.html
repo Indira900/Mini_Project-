@@ -34,6 +34,25 @@
     <small class="text-muted">You can search by city, state, or clinic name.</small>
   </form>
 
+  <!-- Map Toggle -->
+  <div class="d-flex justify-content-center mb-4">
+    <div class="btn-group" role="group" aria-label="View toggle">
+      <input type="radio" class="btn-check" name="viewToggle" id="listView" autocomplete="off" checked>
+      <label class="btn btn-outline-success" for="listView">
+        <i class="fas fa-list"></i> List View
+      </label>
+      <input type="radio" class="btn-check" name="viewToggle" id="mapView" autocomplete="off">
+      <label class="btn btn-outline-success" for="mapView">
+        <i class="fas fa-map-marked-alt"></i> Map View
+      </label>
+    </div>
+  </div>
+
+  <!-- Map Container -->
+  <div id="mapContainer" class="d-none mb-4">
+    <div id="clinicMap" style="height: 500px; width: 100%; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></div>
+  </div>
+
   {% if not query %}
     <div class="alert alert-info">
       <h6><i class="fas fa-info-circle me-2"></i>Available Clinics</h6>
@@ -49,10 +68,10 @@
               <h6 class="card-title fw-bold text-success">
                 <i class="fas fa-hospital me-2"></i>{{ clinic.name }}
               </h6>
-              <p class="card-text mb-2">
-                <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                {{ clinic.address }}, {{ clinic.city }}, {{ clinic.state }}
-              </p>
+                <p class="card-text mb-2">
+                  <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                  {{ clinic.address }}
+                </p>
               {% if clinic.phone %}
                 <p class="card-text mb-2">
                   <i class="fas fa-phone text-success me-2"></i>{{ clinic.phone }}
@@ -97,7 +116,7 @@
                 </h6>
                 <p class="card-text mb-2">
                   <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                  {{ clinic.address }}, {{ clinic.city }}, {{ clinic.state }}
+                  {{ clinic.address }}
                 </p>
                 {% if clinic.phone %}
                   <p class="card-text mb-2">
@@ -134,4 +153,99 @@
     {% endif %}
   {% endif %}
 </div>
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    var map = L.map('clinicMap').setView([20.5937, 78.9629], 5); // Center on India
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Clinic data from template
+    var clinics = [
+        {% if query and clinics %}
+            {% for clinic in clinics %}
+                {
+                    id: {{ clinic.id }},
+                    name: "{{ clinic.name|replace('"', '\\"') }}",
+                    address: "{{ clinic.address|replace('"', '\\"') }}",
+                    city: "{{ clinic.city }}",
+                    state: "{{ clinic.state }}",
+                    phone: "{{ clinic.phone or '' }}",
+                    website: "{{ clinic.website or '' }}",
+                    lat: {{ clinic.latitude|default(0) }},
+                    lng: {{ clinic.longitude|default(0) }}
+                }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        {% elif all_clinics %}
+            {% for clinic in all_clinics %}
+                {
+                    id: {{ clinic.id }},
+                    name: "{{ clinic.name|replace('"', '\\"') }}",
+                    address: "{{ clinic.address|replace('"', '\\"') }}",
+                    city: "{{ clinic.city }}",
+                    state: "{{ clinic.state }}",
+                    phone: "{{ clinic.phone or '' }}",
+                    website: "{{ clinic.website or '' }}",
+                    lat: {{ clinic.latitude|default(0) }},
+                    lng: {{ clinic.longitude|default(0) }}
+                }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        {% endif %}
+    ];
+
+    // Add markers for clinics
+    clinics.forEach(function(clinic) {
+        if (clinic.lat && clinic.lng) {
+            var marker = L.marker([clinic.lat, clinic.lng]).addTo(map);
+
+            var popupContent = `
+                <div class="clinic-popup">
+                    <h6 class="text-success mb-2">${clinic.name}</h6>
+                    <p class="mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i>${clinic.address}</p>
+                    ${clinic.phone ? `<p class="mb-1"><i class="fas fa-phone text-success me-1"></i>${clinic.phone}</p>` : ''}
+                    <div class="mt-2">
+                        <a href="/clinic/${clinic.id}" class="btn btn-success btn-sm">
+                            <i class="fas fa-info-circle me-1"></i>View Details
+                        </a>
+                        ${clinic.website ? `<a href="${clinic.website}" target="_blank" class="btn btn-outline-primary btn-sm ms-1">
+                            <i class="fas fa-external-link-alt me-1"></i>Website
+                        </a>` : ''}
+                    </div>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+        }
+    });
+
+    // View toggle functionality
+    const listViewBtn = document.getElementById('listView');
+    const mapViewBtn = document.getElementById('mapView');
+    const mapContainer = document.getElementById('mapContainer');
+    const listContainer = document.querySelector('.row.mt-3') || document.querySelector('.row');
+
+    function toggleView() {
+        if (mapViewBtn.checked) {
+            mapContainer.classList.remove('d-none');
+            if (listContainer) listContainer.style.display = 'none';
+            // Refresh map size
+            setTimeout(() => map.invalidateSize(), 100);
+        } else {
+            mapContainer.classList.add('d-none');
+            if (listContainer) listContainer.style.display = 'flex';
+        }
+    }
+
+    listViewBtn.addEventListener('change', toggleView);
+    mapViewBtn.addEventListener('change', toggleView);
+});
+</script>
 {% endblock %}

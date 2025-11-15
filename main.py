@@ -492,20 +492,24 @@ def find_clinic():
     total_clinics = Clinic.query.count()
 
     if request.method == 'POST':
-        query = request.form.get('location', '').strip().lower()
+        query = request.form.get('location', '').strip()
 
         if query:
             # Split by comma to allow "city, state"
-            parts = [p.strip().lower() for p in query.split(',')]
+            parts = [p.strip() for p in query.split(',')]
             city = parts[0] if len(parts) > 0 else ''
             state = parts[1] if len(parts) > 1 else ''
 
-            # Search flexibly in city, state, or name (case-insensitive)
-            clinics = Clinic.query.filter(
-                (Clinic.city.ilike(f"%{city}%")) |
-                (Clinic.state.ilike(f"%{state}%")) |
-                (Clinic.name.ilike(f"%{query}%"))
-            ).all()
+            # Build search conditions dynamically (case-insensitive for SQLite)
+            conditions = []
+            if city:
+                conditions.append(db.func.lower(Clinic.city).like(f"%{city.lower()}%"))
+            if state:
+                conditions.append(db.func.lower(Clinic.state).like(f"%{state.lower()}%"))
+            conditions.append(db.func.lower(Clinic.name).like(f"%{query.lower()}%"))
+
+            # Search if any condition matches
+            clinics = Clinic.query.filter(db.or_(*conditions)).all()
     else:
         # If no search query, show all clinics (paginated or limited)
         all_clinics = Clinic.query.order_by(Clinic.state, Clinic.city, Clinic.name).limit(50).all()

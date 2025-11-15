@@ -136,6 +136,8 @@ class Clinic(db.Model):
     phone = db.Column(db.String(20))
     website = db.Column(db.String(255))
     description = db.Column(db.Text)
+    latitude = db.Column(db.Float)  # Latitude for map markers
+    longitude = db.Column(db.Float)  # Longitude for map markers
 
     # Relationship to doctors working at this clinic
     doctors = db.relationship('User', backref='clinic', lazy='dynamic') # References 'user' table via clinic_id foreign key
