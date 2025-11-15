@@ -115,9 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the map
     var map = L.map('clinicMap').setView([19.0760, 72.8777], 12); // Default to Mumbai coordinates
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    // Add Google Maps tiles (requires API key)
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&apikey=AIzaSyCTSBHTJJ-9_xeTWbxfq18L974u3pal2xk', {
+        attribution: '© Google Maps'
     }).addTo(map);
 
     // Add a marker for the clinic
