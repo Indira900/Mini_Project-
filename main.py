@@ -112,10 +112,10 @@ with app.app_context():
 
 
         # Mumbai Clinics
-        mum_clinic1 = Clinic(name="Bloom IVF Center", city="Mumbai", state="MH")
-        mum_clinic2 = Clinic(name="ART Fertility Clinics", city="Mumbai", state="MH")
-        mum_clinic3 = Clinic(name="Bavishi Fertility Institute", city="Mumbai", state="MH")
-        mum_clinic4 = Clinic(name="Progenesis IVF", city="Mumbai", state="MH")
+        mum_clinic1 = Clinic(name="Bloom IVF Center", city="Mumbai", state="MH", address="123 Marine Drive", phone="+91-22-1234-5678", website="https://bloomivf.com", description="Leading IVF center in Mumbai with state-of-the-art facilities and experienced fertility specialists.")
+        mum_clinic2 = Clinic(name="ART Fertility Clinics", city="Mumbai", state="MH", address="456 Bandra West", phone="+91-22-2345-6789", website="https://artfertility.com", description="Comprehensive fertility treatment center offering advanced ART procedures.")
+        mum_clinic3 = Clinic(name="Bavishi Fertility Institute", city="Mumbai", state="MH", address="789 Andheri East", phone="+91-22-3456-7890", website="https://bavishifertility.com", description="Renowned fertility institute with high success rates in IVF treatments.")
+        mum_clinic4 = Clinic(name="Progenesis IVF", city="Mumbai", state="MH", address="101 Lower Parel", phone="+91-22-4567-8901", website="https://progenesisivf.com", description="Modern fertility center specializing in personalized IVF protocols.")
 
         # Delhi Clinics
         delhi_clinic1 = Clinic(name="International Fertility Centre", city="Delhi", state="DL")
@@ -894,6 +894,13 @@ def upload_document():
 @login_required
 def my_documents():
     user = User.query.get(session['user_id'])
+
+    # Add a check to handle invalid sessions (e.g., after a database reset)
+    if user is None:
+        session.clear() # Clear the invalid session
+        flash('Your session has expired. Please log in again.', 'error')
+        return redirect(url_for('login'))
+
     if user.user_type != 'patient':
         flash('Access denied.', 'error')
         return redirect(url_for('index'))
@@ -939,10 +946,23 @@ def analyze_document(doc_id):
             # Extract text from image using OCR
             image = Image.open(file_path)
             extracted_text = pytesseract.image_to_string(image)
+        elif document.file_type in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+            # Handle DOC and DOCX files
+            try:
+                from docx import Document
+                doc = Document(file_path)
+                extracted_text = '\n'.join([paragraph.text for paragraph in doc.paragraphs])
+            except ImportError:
+                extracted_text = "DOCX processing not available. Please install python-docx library."
+            except Exception as e:
+                extracted_text = f"Error processing Word document: {str(e)}"
         else:
-            # For other text files, try to read directly
-            with open(file_path, 'r', encoding='utf-8') as f:
-                extracted_text = f.read()
+            # For other files, try to read as text
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    extracted_text = f.read()
+            except UnicodeDecodeError:
+                extracted_text = "This file appears to be binary and cannot be analyzed as text."
     except Exception as e:
         flash(f'Error analyzing document: {str(e)}', 'error')
         return redirect(url_for('my_documents'))

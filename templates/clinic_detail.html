@@ -5,6 +5,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhseINkfSgoIHPqNkRHE2pRESqmAudayI1AI=" crossorigin=""/>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.style.css') }}">
 {% endblock %}
@@ -85,6 +87,12 @@
                         {% endif %}
                     </div>
 
+                    <!-- Map Section -->
+                    <div class="mt-4">
+                        <h5 class="text-success">Location Map</h5>
+                        <div id="clinicMap" style="height: 300px; width: 100%; border-radius: 8px;" class="border"></div>
+                    </div>
+
                     <div class="mt-4 text-center">
                         <a href="{{ url_for('find_clinic') }}" class="btn btn-outline-success me-2">
                             <i class="fas fa-arrow-left me-2"></i>Back to Search
@@ -100,4 +108,47 @@
         </div>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the map
+    var map = L.map('clinicMap').setView([19.0760, 72.8777], 12); // Default to Mumbai coordinates
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add a marker for the clinic
+    var clinicAddress = "{{ clinic.address }}, {{ clinic.city }}, {{ clinic.state }}";
+    var clinicName = "{{ clinic.name }}";
+
+    // Use approximate coordinates for Mumbai clinics
+    var lat = 19.0760; // Default Mumbai latitude
+    var lng = 72.8777; // Default Mumbai longitude
+
+    // Set specific coordinates based on clinic name
+    if (clinicName.includes("Bloom IVF")) {
+        lat = 18.9220; // Marine Drive area
+        lng = 72.8347;
+    } else if (clinicName.includes("ART Fertility")) {
+        lat = 19.0544; // Bandra area
+        lng = 72.8402;
+    } else if (clinicName.includes("Bavishi")) {
+        lat = 19.1136; // Andheri area
+        lng = 72.8697;
+    } else if (clinicName.includes("Progenesis")) {
+        lat = 18.9949; // Lower Parel area
+        lng = 72.8258;
+    }
+
+    var marker = L.marker([lat, lng]).addTo(map);
+    marker.bindPopup("<b>" + clinicName + "</b><br>" + clinicAddress).openPopup();
+
+    // Center the map on the marker
+    map.setView([lat, lng], 15);
+});
+</script>
+{% endblock %}
 {% endblock %}
