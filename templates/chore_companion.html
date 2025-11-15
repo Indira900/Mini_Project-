@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chore Companion - IVF Journey Tracker</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_dashboard.style.css') }}" />
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">
+        <i class="fas fa-heartbeat text-danger me-2"></i> IVF Journey Tracker
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('patient_dashboard') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('update_profile') }}">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container py-4">
+
+    <!-- Chore Companion Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold text-primary">
+        <i class="fas fa-tasks text-secondary me-2"></i> Chore Companion
+      </h2>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addChoreModal">
+        <i class="fas fa-plus me-2"></i>Add Chore
+      </button>
+    </div>
+
+    <!-- Chore Categories -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card shadow-sm text-center p-3">
+          <i class="fas fa-home fa-2x text-primary mb-2"></i>
+          <h6 class="fw-bold">Household</h6>
+          <span class="badge bg-primary">5 tasks</span>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card shadow-sm text-center p-3">
+          <i class="fas fa-utensils fa-2x text-success mb-2"></i>
+          <h6 class="fw-bold">Kitchen</h6>
+          <span class="badge bg-success">3 tasks</span>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card shadow-sm text-center p-3">
+          <i class="fas fa-broom fa-2x text-warning mb-2"></i>
+          <h6 class="fw-bold">Cleaning</h6>
+          <span class="badge bg-warning">7 tasks</span>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card shadow-sm text-center p-3">
+          <i class="fas fa-shopping-cart fa-2x text-info mb-2"></i>
+          <h6 class="fw-bold">Shopping</h6>
+          <span class="badge bg-info">2 tasks</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Chores -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-calendar-day me-2"></i>Today's Chores</h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group list-group-flush">
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <i class="fas fa-utensils text-success me-2"></i>
+              <span>Prepare breakfast</span>
+            </div>
+            <button class="btn btn-sm btn-outline-success">Mark Complete</button>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <i class="fas fa-broom text-warning me-2"></i>
+              <span>Clean kitchen</span>
+            </div>
+            <button class="btn btn-sm btn-outline-success">Mark Complete</button>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <i class="fas fa-shopping-cart text-info me-2"></i>
+              <span>Grocery shopping</span>
+            </div>
+            <button class="btn btn-sm btn-outline-success">Mark Complete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Overview -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-calendar-week me-2"></i>Weekly Overview</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-2">
+            <div class="p-3 bg-light rounded">
+              <h4 class="text-primary">15</h4>
+              <small class="text-muted">Total Tasks</small>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="p-3 bg-success rounded text-white">
+              <h4>12</h4>
+              <small>Completed</small>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="p-3 bg-warning rounded">
+              <h4>3</h4>
+              <small>Pending</small>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="p-3 bg-info rounded text-white">
+              <h4>85%</h4>
+              <small>Success Rate</small>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="p-3 bg-secondary rounded text-white">
+              <h4>2.5h</h4>
+              <small>Avg Time</small>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="p-3 bg-danger rounded text-white">
+              <h4>5</h4>
+              <small>Overdue</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Chore Modal -->
+  <div class="modal fade" id="addChoreModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Chore</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="choreName" class="form-label">Chore Name</label>
+              <input type="text" class="form-control" id="choreName" placeholder="Enter chore name">
+            </div>
+            <div class="mb-3">
+              <label for="choreCategory" class="form-label">Category</label>
+              <select class="form-select" id="choreCategory">
+                <option value="household">Household</option>
+                <option value="kitchen">Kitchen</option>
+                <option value="cleaning">Cleaning</option>
+                <option value="shopping">Shopping</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="choreFrequency" class="form-label">Frequency</label>
+              <select class="form-select" id="choreFrequency">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="once">One-time</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="choreDueDate" class="form-label">Due Date</label>
+              <input type="date" class="form-control" id="choreDueDate">
+            </div>
+            <div class="mb-3">
+              <label for="choreNotes" class="form-label">Notes</label>
+              <textarea class="form-control" id="choreNotes" rows="3" placeholder="Additional notes..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary">Add Chore</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center mt-4 py-3 bg-light">
+    <p class="mb-0 text-muted">&copy; 2025 IVF Journey Tracker | All Rights Reserved</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

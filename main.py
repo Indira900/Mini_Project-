@@ -1214,6 +1214,10 @@ def analyze_mood():
     # Return the detected emotion
     return jsonify({'emotion': emotion})
 
+# Import and register routes from routes.py
+from routes import register_chore_routes
+register_chore_routes(app)
+
 if __name__ == "__main__":
     # Runs on all interfaces, enabling access from 127.0.0.1:5000 and local IP
     app.run(host="0.0.0.0", port=5000, debug=True)
