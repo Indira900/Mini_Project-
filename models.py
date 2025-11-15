@@ -292,6 +292,7 @@ class MedicalDocument(db.Model):
     file_type = db.Column(db.String(100)) # MIME type
     file_size = db.Column(db.Integer) # Size in bytes
     description = db.Column(db.Text)
+    extracted_text = db.Column(db.Text) # Extracted text from OCR/PDF processing
     uploaded_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):

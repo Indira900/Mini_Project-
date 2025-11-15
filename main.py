@@ -11,6 +11,9 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 import joblib
 from database import db
+import pytesseract
+from pdfminer.high_level import extract_text as pdf_extract_text
+from PIL import Image
 
 # Configure logging to see important startup messages
 logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(message)s')
@@ -909,6 +912,46 @@ def download_document(doc_id):
 
     upload_dir = app.config['UPLOAD_FOLDER']
     return send_from_directory(upload_dir, document.filename, as_attachment=True, download_name=document.original_filename)
+
+# Analyze document
+@app.route('/analyze_document/<int:doc_id>')
+@login_required
+def analyze_document(doc_id):
+    document = MedicalDocument.query.get_or_404(doc_id)
+    if document.user_id != session['user_id']:
+        flash('Access denied.', 'error')
+        return redirect(url_for('my_documents'))
+
+    upload_dir = app.config['UPLOAD_FOLDER']
+    file_path = os.path.join(upload_dir, document.filename)
+
+    if not os.path.exists(file_path):
+        flash('Document file not found.', 'error')
+        return redirect(url_for('my_documents'))
+
+    extracted_text = ""
+
+    try:
+        if document.file_type == 'application/pdf':
+            # Extract text from PDF
+            extracted_text = pdf_extract_text(file_path)
+        elif document.file_type.startswith('image/'):
+            # Extract text from image using OCR
+            image = Image.open(file_path)
+            extracted_text = pytesseract.image_to_string(image)
+        else:
+            # For other text files, try to read directly
+            with open(file_path, 'r', encoding='utf-8') as f:
+                extracted_text = f.read()
+    except Exception as e:
+        flash(f'Error analyzing document: {str(e)}', 'error')
+        return redirect(url_for('my_documents'))
+
+    # Store the extracted text in the document record
+    document.extracted_text = extracted_text
+    db.session.commit()
+
+    return render_template('document_analysis.html', document=document, extracted_text=extracted_text)
 
 # Add Doctor's Note to Cycle
 @app.route('/add_cycle_note/<int:cycle_id>', methods=['POST'])
