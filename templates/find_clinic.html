@@ -34,6 +34,55 @@
     <small class="text-muted">You can search by city, state, or clinic name.</small>
   </form>
 
+  {% if not query %}
+    <div class="alert alert-info">
+      <h6><i class="fas fa-info-circle me-2"></i>Available Clinics</h6>
+      <p>We have <strong>{{ total_clinics|default(0) }}</strong> IVF clinics available across India. Search above to find clinics in your area, or browse all clinics below.</p>
+    </div>
+
+    <h5 class="mt-4 mb-3">Browse All Clinics</h5>
+    <div class="row mt-3">
+      {% for clinic in all_clinics %}
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title fw-bold text-success">
+                <i class="fas fa-hospital me-2"></i>{{ clinic.name }}
+              </h6>
+              <p class="card-text mb-2">
+                <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                {{ clinic.address }}, {{ clinic.city }}, {{ clinic.state }}
+              </p>
+              {% if clinic.phone %}
+                <p class="card-text mb-2">
+                  <i class="fas fa-phone text-success me-2"></i>{{ clinic.phone }}
+                </p>
+              {% endif %}
+              {% if clinic.contact_number %}
+                <p class="card-text mb-2">
+                  <i class="fas fa-mobile-alt text-success me-2"></i>{{ clinic.contact_number }}
+                </p>
+              {% endif %}
+              {% if clinic.description %}
+                <p class="card-text text-muted small mb-3">{{ clinic.description[:100] }}...</p>
+              {% endif %}
+              <div class="mt-auto">
+                <a href="{{ url_for('clinic_detail', clinic_id=clinic.id) }}" class="btn btn-success btn-sm">
+                  <i class="fas fa-info-circle me-2"></i>View Details
+                </a>
+                {% if clinic.website %}
+                  <a href="{{ clinic.website }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
+                    <i class="fas fa-external-link-alt me-2"></i>Website
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   {% if query %}
     <h5 class="mt-4">Search Results for "<strong>{{ query }}</strong>"</h5>
 

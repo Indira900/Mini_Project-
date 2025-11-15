@@ -488,6 +488,8 @@ def my_cycle_notes():
 def find_clinic():
     clinics = []
     query = None
+    all_clinics = []
+    total_clinics = Clinic.query.count()
 
     if request.method == 'POST':
         query = request.form.get('location', '').strip().lower()
@@ -504,8 +506,11 @@ def find_clinic():
                 (Clinic.state.ilike(f"%{state}%")) |
                 (Clinic.name.ilike(f"%{query}%"))
             ).all()
+    else:
+        # If no search query, show all clinics (paginated or limited)
+        all_clinics = Clinic.query.order_by(Clinic.state, Clinic.city, Clinic.name).limit(50).all()
 
-    return render_template('find_clinic.html', clinics=clinics, query=query)
+    return render_template('find_clinic.html', clinics=clinics, query=query, all_clinics=all_clinics, total_clinics=total_clinics)
 
 # Clinic Detail page
 @app.route('/clinic/<int:clinic_id>')
