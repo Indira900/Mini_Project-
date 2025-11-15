@@ -1,0 +1,14 @@
+{
+  "feature_order": [
+    "age",
+    "bmi",
+    "amh",
+    "fsh",
+    "previous_ivf",
+    "stress",
+    "sleep_hours",
+    "exercise_min"
+  ],
+  "model": "RandomForestClassifier",
+  "accuracy": 0.65
+}

@@ -439,13 +439,16 @@ function clearChatHistory() {
 document.addEventListener('DOMContentLoaded', function() {
     ChatBot.init();
     
-    // Show common questions after a delay if no messages
-    setTimeout(() => {
-        if (ChatBot.messageHistory.length <= 1) { // Only welcome message
-            ChatBot.addMessage("Here are some common questions I can help with:", 'bot');
-            ChatBot.showCommonQuestions();
-        }
-    }, 3000);
+    // Only run this if the chat widget exists on the page
+    if (document.getElementById('chatWidget')) {
+        // Show common questions after a delay if no messages
+        setTimeout(() => {
+            if (ChatBot.messageHistory.length <= 1) { // Only welcome message
+                ChatBot.addMessage("Here are some common questions I can help with:", 'bot');
+                ChatBot.showCommonQuestions();
+            }
+        }, 3000);
+    }
 });
 
 // Add CSS for typing animation and other chat styles

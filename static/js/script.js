@@ -307,6 +307,7 @@ function initializeUtilities() {
     
     // Initialize range input displays
     initializeRangeInputs();
+
 }
 
 /**

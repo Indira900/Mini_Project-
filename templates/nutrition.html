@@ -1,6 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}Nutrition & Wellness - IVF Journey Tracker{% endblock %}
+{% block head %}
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhseINkfSgoIHPqNkRHE2pRESqmAudayI1AI=" crossorigin=""/>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nutrition.style.css') }}">
+{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -53,15 +69,24 @@
 
                     <!-- Meal Suggestions -->
                     <div class="mb-4">
-                        <h6 class="text-info mb-3">Daily Meal Suggestions</h6>
+                        <h6 class="text-info mb-3">Daily Meal Suggestions (IVF-Friendly)</h6>
                         <div class="meal-plan">
-                            {% for meal, suggestion in nutrition_plan.meal_suggestions.items() %}
+                            {% for item in nutrition_plan.meal_suggestions %}
                                 <div class="meal-item mb-3">
                                     <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-{{ 'sun' if meal == 'breakfast' else 'cloud-sun' if meal == 'lunch' else 'moon' if meal == 'dinner' else 'cookie-bite' }} text-warning me-2"></i>
-                                        <strong>{{ meal.title() }}</strong>
+                                        {% if item.meal == 'Breakfast' %}
+                                            <i class="fas fa-sun text-warning me-2"></i>
+                                        {% elif item.meal == 'Lunch' %}
+                                            <i class="fas fa-cloud-sun text-info me-2"></i>
+                                        {% elif item.meal == 'Dinner' %}
+                                            <i class="fas fa-moon text-primary me-2"></i>
+                                        {% else %}
+                                            <i class="fas fa-cookie-bite text-success me-2"></i>
+                                        {% endif %}
+                                        <strong>{{ item.meal }}</strong>
                                     </div>
-                                    <p class="mb-0 ms-4">{{ suggestion }}</p>
+                                    <p class="mb-1 ms-4">{{ item.description }}</p>
+                                    <small class="text-muted ms-4 fst-italic">{{ item.benefit }}</small>
                                 </div>
                             {% endfor %}
                         </div>
@@ -95,9 +120,32 @@
                     <!-- Hydration -->
                     <div class="hydration-section bg-light p-3 rounded">
                         <h6 class="text-info mb-2">
-                            <i class="fas fa-tint me-2"></i>Hydration Goals
+                            <i class="fas fa-tint me-2"></i>Hydration Goals & Reminders
                         </h6>
-                        <p class="mb-0">{{ nutrition_plan.hydration }}</p>
+                        <p class="mb-3">Drink 8-10 glasses of water daily for optimal reproductive health.</p>
+                        <div class="water-reminder mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Water Intake Today</span>
+                                <span id="waterCount">0 / 8 glasses</span>
+                            </div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-info" id="waterProgress" style="width: 0%"></div>
+                            </div>
+                            <button class="btn btn-sm btn-info" onclick="addWaterGlass()">
+                                <i class="fas fa-plus me-1"></i>Add Glass
+                            </button>
+                        </div>
+                        <div class="reminder-settings">
+                            <h6 class="text-muted mb-2">Water Reminder Schedule</h6>
+                            <div class="reminder-times">
+                                <button class="btn btn-sm btn-outline-info me-2 mb-2" onclick="setWaterReminder('08:00')">8:00 AM</button>
+                                <button class="btn btn-sm btn-outline-info me-2 mb-2" onclick="setWaterReminder('10:00')">10:00 AM</button>
+                                <button class="btn btn-sm btn-outline-info me-2 mb-2" onclick="setWaterReminder('12:00')">12:00 PM</button>
+                                <button class="btn btn-sm btn-outline-info me-2 mb-2" onclick="setWaterReminder('14:00')">2:00 PM</button>
+                                <button class="btn btn-sm btn-outline-info me-2 mb-2" onclick="setWaterReminder('16:00')">4:00 PM</button>
+                                <button class="btn btn-sm btn-outline-info me-2 mb-2" onclick="setWaterReminder('18:00')">6:00 PM</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -127,15 +175,25 @@
 
                     <!-- Yoga Poses -->
                     <div class="mb-4">
-                        <h6 class="text-primary mb-3">Gentle Yoga Poses</h6>
+                        <h6 class="text-primary mb-3">Gentle Yoga Poses for Fertility</h6>
                         <div class="poses-list">
                             {% for pose in yoga_routine.poses %}
                                 <div class="pose-item mb-3 border-start border-primary border-3 ps-3">
-                                    <h6 class="mb-1">{{ pose.name }}</h6>
-                                    <p class="mb-1 small">{{ pose.description }}</p>
-                                    <small class="text-muted">
-                                        <i class="fas fa-heart me-1"></i>{{ pose.benefit }}
-                                    </small>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                    <div class="img-container mb-2" onclick="showImage('{{ pose.image }}', '{{ pose.name }}')">
+                                                <img src="{{ pose.image }}" alt="{{ pose.name }}" class="img-fluid rounded"
+                                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/200x150/6f42c1/ffffff?text={{ pose.name|replace(' ', '+') }}';">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8 ps-md-0">
+                                            <h6 class="mb-1">{{ pose.name }}</h6>
+                                            <p class="mb-1 small">{{ pose.description }}</p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-heart me-1"></i>{{ pose.benefit }}
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>
@@ -146,9 +204,19 @@
                         <h6 class="text-info mb-3">Breathing Exercises</h6>
                         <div class="breathing-exercises">
                             {% for exercise in yoga_routine.breathing_exercises %}
-                                <div class="breathing-item mb-2 p-2 bg-light rounded">
-                                    <i class="fas fa-wind text-info me-2"></i>
-                                    <span>{{ exercise }}</span>
+                                <div class="pose-item mb-3 border-start border-info border-3 ps-3">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                        <div class="img-container mb-2" onclick="showImage('{{ exercise.image }}', '{{ exercise.name }}')">
+                                            <img src="{{ exercise.image }}" alt="{{ exercise.name }}" class="img-fluid rounded"
+                                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/200x150/17a2b8/ffffff?text={{ exercise.name|replace(' ', '+') }}';">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8 ps-md-0">
+                                            <h6 class="mb-1">{{ exercise.name }}</h6>
+                                            <p class="mb-1 small">{{ exercise.description }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>
@@ -158,7 +226,21 @@
                     <div class="mb-4">
                         <h6 class="text-success mb-3">Meditation Practice</h6>
                         <div class="meditation-section bg-light p-3 rounded">
-                            <p class="mb-0">{{ yoga_routine.meditation }}</p>
+                            <div class="pose-item">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="img-container mb-2" onclick="showImage('{{ yoga_routine.meditation.image }}', '{{ yoga_routine.meditation.name }}')">
+                                            <img src="{{ yoga_routine.meditation.image }}" alt="{{ yoga_routine.meditation.name }}" class="img-fluid rounded"
+                                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/200x150/28a745/ffffff?text=Meditation';">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 ps-md-0">
+                                        <h6 class="mb-1">{{ yoga_routine.meditation.name }}</h6>
+                                        <p class="mb-1 small">{{ yoga_routine.meditation.description }}</p>
+                                        <button class="btn btn-sm btn-outline-success mt-2" onclick="startMeditation('yoga_nidra')"><i class="fas fa-play me-1"></i>Start Practice</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -203,28 +285,37 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <div class="resource-card text-center p-3 border rounded">
-                                <i class="fas fa-heartbeat text-danger fa-2x mb-2"></i>
-                                <h6>Fertility Foods Guide</h6>
-                                <p class="small text-muted">Comprehensive guide to fertility-boosting foods and nutrients</p>
-                                <button class="btn btn-sm btn-outline-primary">Learn More</button>
-                            </div>
+                            <a href="#" class="resource-card-link">
+                                <div class="card resource-card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="resource-icon bg-gradient-danger"><i class="fas fa-heartbeat"></i></div>
+                                        <h6 class="mt-3">Fertility Foods Guide</h6>
+                                        <p class="small text-muted">A comprehensive guide to fertility-boosting foods and essential nutrients.</p>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <div class="resource-card text-center p-3 border rounded">
-                                <i class="fas fa-dumbbell text-success fa-2x mb-2"></i>
-                                <h6>Gentle Exercise Program</h6>
-                                <p class="small text-muted">Safe exercises during IVF treatment cycles</p>
-                                <button class="btn btn-sm btn-outline-success">View Program</button>
-                            </div>
+                            <a href="#" class="resource-card-link">
+                                <div class="card resource-card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="resource-icon bg-gradient-success"><i class="fas fa-dumbbell"></i></div>
+                                        <h6 class="mt-3">Gentle Exercise Program</h6>
+                                        <p class="small text-muted">Discover safe and effective exercises to support your body during IVF.</p>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <div class="resource-card text-center p-3 border rounded">
-                                <i class="fas fa-brain text-info fa-2x mb-2"></i>
-                                <h6>Stress Management</h6>
-                                <p class="small text-muted">Mindfulness and stress reduction techniques</p>
-                                <button class="btn btn-sm btn-outline-info">Explore</button>
-                            </div>
+                            <a href="#" class="resource-card-link">
+                                <div class="card resource-card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="resource-icon bg-gradient-info"><i class="fas fa-brain"></i></div>
+                                        <h6 class="mt-3">Stress Management</h6>
+                                        <p class="small text-muted">Learn mindfulness and relaxation techniques to calm your mind and body.</p>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -234,90 +325,90 @@
 
     <!-- Meal Tracker -->
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-7">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-calendar-check me-2"></i>Today's Meal Tracker
                     </h5>
                 </div>
-                <div class="card-body">
-                    <form id="mealTrackerForm">
+                <div class="card-body p-4">
+                    {% if today_log and (today_log.meal_breakfast or today_log.meal_lunch or today_log.meal_dinner or today_log.meal_snacks) %}
                         <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <h6>Breakfast</h6>
-                                <textarea class="form-control" placeholder="What did you eat?" rows="3"></textarea>
-                                <small class="text-muted">Estimated calories: <span class="fw-bold">400-500</span></small>
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-primary"><i class="fas fa-sun me-2"></i>Breakfast</h6>
+                                <p class="bg-light p-2 rounded">{{ today_log.meal_breakfast or 'Not logged' }}</p>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <h6>Lunch</h6>
-                                <textarea class="form-control" placeholder="What did you eat?" rows="3"></textarea>
-                                <small class="text-muted">Estimated calories: <span class="fw-bold">500-600</span></small>
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-info"><i class="fas fa-cloud-sun me-2"></i>Lunch</h6>
+                                <p class="bg-light p-2 rounded">{{ today_log.meal_lunch or 'Not logged' }}</p>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <h6>Dinner</h6>
-                                <textarea class="form-control" placeholder="What did you eat?" rows="3"></textarea>
-                                <small class="text-muted">Estimated calories: <span class="fw-bold">600-700</span></small>
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-purple"><i class="fas fa-moon me-2"></i>Dinner</h6>
+                                <p class="bg-light p-2 rounded">{{ today_log.meal_dinner or 'Not logged' }}</p>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <h6>Snacks</h6>
-                                <textarea class="form-control" placeholder="Snacks & drinks" rows="3"></textarea>
-                                <small class="text-muted">Estimated calories: <span class="fw-bold">200-300</span></small>
+                            <div class="col-md-6 mb-3">
+                                <h6 class="text-success"><i class="fas fa-cookie-bite me-2"></i>Snacks</h6>
+                                <p class="bg-light p-2 rounded">{{ today_log.meal_snacks or 'Not logged' }}</p>
                             </div>
                         </div>
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Today's Meals
-                            </button>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils text-muted fa-3x mb-3"></i>
+                            <h5 class="text-muted">No meals logged for today.</h5>
+                            <p>Go to the Wellness page to log your meals and see your nutrition summary.</p>
+                            <a href="{{ url_for('wellness') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Log Today's Wellness
+                            </a>
                         </div>
-                    </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
         
-        <div class="col-lg-4">
+        <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
                     <h6 class="mb-0">
                         <i class="fas fa-chart-pie me-2"></i>Nutrition Summary
                     </h6>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="nutrition-summary">
                         <div class="nutrient-progress mb-3">
                             <div class="d-flex justify-content-between mb-1">
                                 <span>Protein</span>
-                                <span>65g / 80g</span>
+                                <span>{{ nutrition_summary.protein_g or 0 }}g / 80g</span>
                             </div>
                             <div class="progress">
-                                <div class="progress-bar bg-success" style="width: 81%"></div>
+                                <div class="progress-bar bg-success" style="width: {{ (nutrition_summary.protein_g or 0) / 80 * 100 }}%"></div>
                             </div>
                         </div>
                         <div class="nutrient-progress mb-3">
                             <div class="d-flex justify-content-between mb-1">
                                 <span>Folic Acid</span>
-                                <span>320mcg / 400mcg</span>
+                                <span>{{ nutrition_summary.folic_acid_mcg or 0 }}mcg / 400mcg</span>
                             </div>
                             <div class="progress">
-                                <div class="progress-bar bg-info" style="width: 80%"></div>
+                                <div class="progress-bar bg-info" style="width: {{ (nutrition_summary.folic_acid_mcg or 0) / 400 * 100 }}%"></div>
                             </div>
                         </div>
                         <div class="nutrient-progress mb-3">
                             <div class="d-flex justify-content-between mb-1">
                                 <span>Iron</span>
-                                <span>15mg / 18mg</span>
+                                <span>{{ nutrition_summary.iron_mg or 0 }}mg / 18mg</span>
                             </div>
                             <div class="progress">
-                                <div class="progress-bar bg-warning" style="width: 83%"></div>
+                                <div class="progress-bar bg-warning" style="width: {{ (nutrition_summary.iron_mg or 0) / 18 * 100 }}%"></div>
                             </div>
                         </div>
                         <div class="nutrient-progress">
                             <div class="d-flex justify-content-between mb-1">
-                                <span>Water</span>
-                                <span>6 / 8 glasses</span>
+                                <span>Omega-3</span>
+                                <span>{{ nutrition_summary.omega_3_mg or 0 }}mg / 1500mg</span>
                             </div>
                             <div class="progress">
-                                <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                <div class="progress-bar bg-primary" style="width: {{ (nutrition_summary.omega_3_mg or 0) / 1500 * 100 }}%"></div>
                             </div>
                         </div>
                     </div>
@@ -357,10 +448,26 @@
         </div>
     </div>
 </div>
+
+<!-- Image Viewer Modal -->
+<div class="modal fade" id="imageViewerModal" tabindex="-1" aria-labelledby="imageViewerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageViewerModalLabel">Image Viewer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img src="" id="modalImage" class="img-fluid rounded" alt="Yoga Pose">
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+let imageViewerModal = null;
 // Generate new meal plan
 function generateMealPlan() {
     // Simulate AI meal plan generation
@@ -427,6 +534,161 @@ document.getElementById('mealTrackerForm').addEventListener('submit', function(e
     e.preventDefault();
     alert('Meals saved successfully! Your nutrition data has been updated.');
 });
+
+// Water tracking functionality
+let waterGlasses = 0;
+const maxGlasses = 8;
+
+function addWaterGlass() {
+    if (waterGlasses < maxGlasses) {
+        waterGlasses++;
+        updateWaterDisplay();
+        playWaterSound();
+    }
+}
+
+function updateWaterDisplay() {
+    document.getElementById('waterCount').textContent = `${waterGlasses} / ${maxGlasses} glasses`;
+    const percentage = (waterGlasses / maxGlasses) * 100;
+    document.getElementById('waterProgress').style.width = `${percentage}%`;
+}
+
+function playWaterSound() {
+    // Create audio context for water drop sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+}
+
+function setWaterReminder(time) {
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
+    // Set reminder (in a real app, this would be stored and managed by the backend)
+    alert(`Water reminder set for ${time}. You'll be notified to stay hydrated!`);
+}
+
+// Meditation functionality
+let meditationTimer = null;
+let meditationTimeLeft = 10 * 60; // Default 10 minutes
+let currentMeditationType = 'morning';
+
+function startMeditation(type) {
+    currentMeditationType = type;
+    meditationTimeLeft = type === 'morning' ? 10 * 60 : 15 * 60;
+    document.getElementById('meditationTimer').style.display = 'block';
+    document.getElementById('meditationMinutes').textContent = Math.floor(meditationTimeLeft / 60).toString().padStart(2, '0');
+    document.getElementById('meditationSeconds').textContent = '00';
+}
+
+document.getElementById('startMeditationBtn').addEventListener('click', function() {
+    if (meditationTimer) clearInterval(meditationTimer);
+
+    meditationTimer = setInterval(function() {
+        meditationTimeLeft--;
+        updateMeditationDisplay();
+
+        if (meditationTimeLeft <= 0) {
+            clearInterval(meditationTimer);
+            playCompletionSound();
+            alert('Meditation complete! Take a deep breath and carry this peace with you.');
+            document.getElementById('meditationTimer').style.display = 'none';
+        }
+    }, 1000);
+
+    this.style.display = 'none';
+    document.getElementById('pauseMeditationBtn').style.display = 'inline-block';
+});
+
+document.getElementById('pauseMeditationBtn').addEventListener('click', function() {
+    clearInterval(meditationTimer);
+    this.style.display = 'none';
+    document.getElementById('startMeditationBtn').style.display = 'inline-block';
+});
+
+document.getElementById('stopMeditationBtn').addEventListener('click', function() {
+    clearInterval(meditationTimer);
+    meditationTimeLeft = currentMeditationType === 'morning' ? 10 * 60 : 15 * 60;
+    updateMeditationDisplay();
+    document.getElementById('startMeditationBtn').style.display = 'inline-block';
+    document.getElementById('pauseMeditationBtn').style.display = 'none';
+});
+
+function updateMeditationDisplay() {
+    const minutes = Math.floor(meditationTimeLeft / 60);
+    const seconds = meditationTimeLeft % 60;
+    document.getElementById('meditationMinutes').textContent = minutes.toString().padStart(2, '0');
+    document.getElementById('meditationSeconds').textContent = seconds.toString().padStart(2, '0');
+}
+
+function playCompletionSound() {
+    // Gentle completion chime
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Play a series of gentle tones
+    const frequencies = [523, 659, 784]; // C, E, G notes
+    let currentNote = 0;
+
+    function playNote() {
+        if (currentNote < frequencies.length) {
+            oscillator.frequency.setValueAtTime(frequencies[currentNote], audioContext.currentTime);
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+            currentNote++;
+            setTimeout(playNote, 350);
+        }
+    }
+
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    playNote();
+}
+
+// Initialize water tracking from localStorage if available
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the modal
+    if (document.getElementById('imageViewerModal')) {
+        imageViewerModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+    }
+
+    const savedWater = localStorage.getItem('waterGlasses');
+    if (savedWater) {
+        waterGlasses = parseInt(savedWater);
+        updateWaterDisplay();
+    }
+
+    // Save water count when changed
+    const originalAddWater = addWaterGlass;
+    addWaterGlass = function() {
+        originalAddWater();
+        localStorage.setItem('waterGlasses', waterGlasses);
+    };
+});
+
+// Show image in modal
+function showImage(src, title) {
+    document.getElementById('modalImage').src = src;
+    document.getElementById('imageViewerModalLabel').textContent = title;
+    if (imageViewerModal) imageViewerModal.show();
+}
 </script>
 
 <style>
@@ -486,12 +748,34 @@ document.getElementById('mealTrackerForm').addEventListener('submit', function(e
 }
 
 .resource-card {
-    transition: all 0.3s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
 }
 
 .resource-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.resource-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.resource-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.75rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
 }
 
 .yoga-timer {

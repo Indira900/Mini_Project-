@@ -1,5 +1,4 @@
 import math
-from datetime import datetime
 
 def calculate_ivf_success_prediction(patient_data):
     """Calculate IVF success prediction based on multiple factors"""

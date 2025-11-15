@@ -24,6 +24,7 @@
     --gradient-success: linear-gradient(135deg, #198754 0%, #146c43 100%);
     --gradient-info: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
     --gradient-warning: linear-gradient(135deg, #ffc107 0%, #ffb800 100%);
+    --gradient-danger: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
     --gradient-purple: linear-gradient(135deg, #6f42c1 0%, #5a2d91 100%);
     --gradient-teal: linear-gradient(135deg, #20c997 0%, #198754 100%);
     
@@ -73,6 +74,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .bg-gradient-warning {
     background: var(--gradient-warning) !important;
+}
+
+.bg-gradient-danger {
+    background: var(--gradient-danger) !important;
 }
 
 .bg-gradient-purple {

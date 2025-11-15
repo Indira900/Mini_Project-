@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhseINkfSgoIHPqNkRHE2pRESqmAudayI1AI=" crossorigin=""/>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.style.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="hero-section bg-gradient-primary text-white py-5">
     <div class="container">
@@ -10,12 +28,15 @@
                     Track your fertility treatment with revolutionary AI insights, personalized predictions, 
                     and comprehensive wellness monitoring designed specifically for IVF patients.
                 </p>
-                <div class="d-flex gap-3">
-                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
-                        <i class="fas fa-user-plus me-2"></i>Get Started
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('login', type='patient') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-user-injured me-2"></i>Patient Login
                     </a>
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    <a href="{{ url_for('login', type='doctor') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-md me-2"></i>Doctor Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Register
                     </a>
                 </div>
             </div>
@@ -115,27 +136,39 @@
     <div class="container">
         <div class="row text-center">
             <div class="col-lg-3 col-md-6 mb-4">
-                <div class="stat-card">
-                    <div class="stat-number">95%</div>
-                    <div class="stat-label">Prediction Accuracy</div>
+                <div class="stat-card bg-gradient-primary">
+                    <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+                    <div class="stat-content">
+                        <h3>95%</h3>
+                        <p>Prediction Accuracy</p>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
-                <div class="stat-card">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">AI Support</div>
+                <div class="stat-card bg-gradient-success">
+                    <div class="stat-icon"><i class="fas fa-headset"></i></div>
+                    <div class="stat-content">
+                        <h3>24/7</h3>
+                        <p>AI Support</p>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
-                <div class="stat-card">
-                    <div class="stat-number">2025</div>
-                    <div class="stat-label">Latest AI Models</div>
+                <div class="stat-card bg-gradient-info">
+                    <div class="stat-icon"><i class="fas fa-brain"></i></div>
+                    <div class="stat-content">
+                        <h3>2025</h3>
+                        <p>Latest AI Models</p>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
-                <div class="stat-card">
-                    <div class="stat-number">100+</div>
-                    <div class="stat-label">Wellness Metrics</div>
+                <div class="stat-card bg-gradient-warning">
+                    <div class="stat-icon"><i class="fas fa-heartbeat"></i></div>
+                    <div class="stat-content">
+                        <h3>100+</h3>
+                        <p>Wellness Metrics</p>
+                    </div>
                 </div>
             </div>
         </div>
