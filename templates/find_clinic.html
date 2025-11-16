@@ -1,20 +1,8 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhseINkfSgoIHPqNkRHE2pRESqmAudayI1AI=" crossorigin=""/>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.style.css') }}">
 {% endblock %}
 
 {% block title %}Find a Clinic - IVF Journey Tracker{% endblock %}
@@ -74,16 +62,16 @@
                 </p>
               {% if clinic.phone %}
                 <p class="card-text mb-2">
-                  <i class="fas fa-phone text-success me-2"></i>{{ clinic.phone }}
+                  <i class="fas fa-phone text-success me-2"></i>{{ clinic.phone or '' }}
                 </p>
               {% endif %}
               {% if clinic.contact_number %}
                 <p class="card-text mb-2">
-                  <i class="fas fa-mobile-alt text-success me-2"></i>{{ clinic.contact_number }}
+                  <i class="fas fa-mobile-alt text-success me-2"></i>{{ clinic.contact_number or '' }}
                 </p>
               {% endif %}
               {% if clinic.description %}
-                <p class="card-text text-muted small mb-3">{{ clinic.description[:100] }}...</p>
+                <p class="card-text text-muted small mb-3">{{ (clinic.description or '')[:100] }}...</p>
               {% endif %}
               <div class="mt-auto">
                 <a href="{{ url_for('clinic_detail', clinic_id=clinic.id) }}" class="btn btn-success btn-sm">
@@ -92,6 +80,11 @@
                 {% if clinic.website %}
                   <a href="{{ clinic.website }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
                     <i class="fas fa-external-link-alt me-2"></i>Website
+                  </a>
+                {% endif %}
+                {% if clinic.latitude and clinic.longitude %}
+                  <a href="#" class="btn btn-outline-info btn-sm ms-2" onclick="viewOnMap({{ clinic.latitude }}, {{ clinic.longitude }}, '{{ clinic.name|replace('\'', '\\\'') }}')">
+                    <i class="fas fa-map-marked-alt me-2"></i>View on Map
                   </a>
                 {% endif %}
               </div>
@@ -120,16 +113,16 @@
                 </p>
                 {% if clinic.phone %}
                   <p class="card-text mb-2">
-                    <i class="fas fa-phone text-success me-2"></i>{{ clinic.phone }}
+                    <i class="fas fa-phone text-success me-2"></i>{{ clinic.phone or '' }}
                   </p>
                 {% endif %}
                 {% if clinic.contact_number %}
                   <p class="card-text mb-2">
-                    <i class="fas fa-mobile-alt text-success me-2"></i>{{ clinic.contact_number }}
+                    <i class="fas fa-mobile-alt text-success me-2"></i>{{ clinic.contact_number or '' }}
                   </p>
                 {% endif %}
                 {% if clinic.description %}
-                  <p class="card-text text-muted small mb-3">{{ clinic.description[:100] }}...</p>
+                  <p class="card-text text-muted small mb-3">{{ (clinic.description or '')[:100] }}...</p>
                 {% endif %}
                 <div class="mt-auto">
                   <a href="{{ url_for('clinic_detail', clinic_id=clinic.id) }}" class="btn btn-success btn-sm">
@@ -138,6 +131,11 @@
                   {% if clinic.website %}
                     <a href="{{ clinic.website }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
                       <i class="fas fa-external-link-alt me-2"></i>Website
+                    </a>
+                  {% endif %}
+                  {% if clinic.latitude and clinic.longitude %}
+                    <a href="#" class="btn btn-outline-info btn-sm ms-2" onclick="viewOnMap({{ clinic.latitude }}, {{ clinic.longitude }}, '{{ clinic.name|replace('\'', '\\\'') }}')">
+                      <i class="fas fa-map-marked-alt me-2"></i>View on Map
                     </a>
                   {% endif %}
                 </div>
@@ -153,11 +151,9 @@
     {% endif %}
   {% endif %}
 </div>
+{% endblock %}
 
 {% block scripts %}
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize map
@@ -173,29 +169,31 @@ document.addEventListener('DOMContentLoaded', function() {
         {% if query and clinics %}
             {% for clinic in clinics %}
                 {
-                    id: {{ clinic.id }},
-                    name: "{{ clinic.name|replace('"', '\\"') }}",
-                    address: "{{ clinic.address|replace('"', '\\"') }}",
-                    city: "{{ clinic.city }}",
-                    state: "{{ clinic.state }}",
-                    phone: "{{ clinic.phone or '' }}",
-                    website: "{{ clinic.website or '' }}",
-                    lat: {{ clinic.latitude|default(0) }},
-                    lng: {{ clinic.longitude|default(0) }}
+                    "id": {{ clinic.id }},
+                    "name": "{{ clinic.name|replace('"', '\\"')|replace('\n', '\\n') }}",
+                    "address": "{{ clinic.address|replace('"', '\\"')|replace('\n', '\\n') }}",
+                    "city": "{{ clinic.city }}",
+                    "state": "{{ clinic.state }}",
+                    "phone": "{{ clinic.phone or '' }}",
+                    "website": "{{ clinic.website or '' }}",
+                    "lat": {{ clinic.latitude|default(0) }},
+                    "lng": {{ clinic.longitude|default(0) }},
+                    "url": "{{ url_for('clinic_detail', clinic_id=clinic.id) }}"
                 }{% if not loop.last %},{% endif %}
             {% endfor %}
         {% elif all_clinics %}
             {% for clinic in all_clinics %}
                 {
-                    id: {{ clinic.id }},
-                    name: "{{ clinic.name|replace('"', '\\"') }}",
-                    address: "{{ clinic.address|replace('"', '\\"') }}",
-                    city: "{{ clinic.city }}",
-                    state: "{{ clinic.state }}",
-                    phone: "{{ clinic.phone or '' }}",
-                    website: "{{ clinic.website or '' }}",
-                    lat: {{ clinic.latitude|default(0) }},
-                    lng: {{ clinic.longitude|default(0) }}
+                    "id": {{ clinic.id }},
+                    "name": "{{ clinic.name|replace('"', '\\"')|replace('\n', '\\n') }}",
+                    "address": "{{ clinic.address|replace('"', '\\"')|replace('\n', '\\n') }}",
+                    "city": "{{ clinic.city }}",
+                    "state": "{{ clinic.state }}",
+                    "phone": "{{ clinic.phone or '' }}",
+                    "website": "{{ clinic.website or '' }}",
+                    "lat": {{ clinic.latitude|default(0) }},
+                    "lng": {{ clinic.longitude|default(0) }},
+                    "url": "{{ url_for('clinic_detail', clinic_id=clinic.id) }}"
                 }{% if not loop.last %},{% endif %}
             {% endfor %}
         {% endif %}
@@ -212,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p class="mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i>${clinic.address}</p>
                     ${clinic.phone ? `<p class="mb-1"><i class="fas fa-phone text-success me-1"></i>${clinic.phone}</p>` : ''}
                     <div class="mt-2">
-                        <a href="/clinic/${clinic.id}" class="btn btn-success btn-sm">
+                        <a href="${clinic.url}" class="btn btn-success btn-sm">
                             <i class="fas fa-info-circle me-1"></i>View Details
                         </a>
                         ${clinic.website ? `<a href="${clinic.website}" target="_blank" class="btn btn-outline-primary btn-sm ms-1">
@@ -242,6 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
             mapContainer.classList.add('d-none');
             if (listContainer) listContainer.style.display = 'flex';
         }
+    }
+
+    // Function to view clinic on map
+    function viewOnMap(lat, lng, name) {
+        // Open Google Maps in a new tab with the clinic location
+        window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
     }
 
     listViewBtn.addEventListener('change', toggleView);
